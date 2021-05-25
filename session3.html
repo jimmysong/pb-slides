@@ -1,0 +1,397 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Session 3 - Transaction Parsing</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+<div class="reveal">
+  <div class="slides">
+<section>
+  <h2> Class Schedule </h2>
+  <div class="container">
+    <div class="col">
+      <h3>Day 1</h3>
+      <ul>
+        <li>Foundational Math</li>
+        <li>Elliptic Curve Cryptography</li>
+        <li class="current">Transaction Parsing</li>
+        <li>Script</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Day 2</h3>
+      <ul>
+        <li>Transaction Construction</li>
+        <li>Blocks</li>
+        <li>Simplified Payment Verification</li>
+        <li>Networking and Segwit</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <section>
+    <h1>Transaction Parsing</h1>
+  </section>
+  <section>
+    <h2>Session 3 Objectives</h2>
+    <ul>
+      <li class="fragment"><strong>Learn Elliptic Curve Cryptography Signing and Verification</strong>
+      <li class="fragment"><strong>Learn Transaction Structure </strong>
+      <li class="fragment"><strong>Learn Transaction Parsing</strong>
+    </ul>
+  </section>
+  <section>
+    <h2>Elliptic Curves Digital Signature Algorithm (ECDSA) </h2>
+  </section>
+  <section>
+    <h2>Intuition</h2>
+    <ul>
+      <li class="fragment">$eG=P$</li>
+      <li class="fragment">$uG+vP=kG$ where $u,v \neq 0$ and $k$ is random</li>
+      <li class="fragment">You can choose both $u$ and $v$ (two degrees of freedom). Can you make the $uG+vP$ equal to $kG$?</li>
+      <li class="fragment">If you know $e$: $kG=uG+vP=uG+veG=(u+ve)G$. Easy to choose $u$ and $v$</li>
+      <li class="fragment">If you don't know $e$ and can generate $u$ and $v$, then $e=(k-u)/v$ to learn $e$, which would break Discrete Log</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Choosing $u$ and $v$</h2>
+    <ul>
+      <li class="fragment">We have two degrees of freedom, so we use one to prove that we meant to hit that target.</li>
+      <li class="fragment">$R=kG=uG+vP$ </li>
+      <li class="fragment">We use part of $R$ for setting $v$</li>
+      <li class="fragment">Then we can set $u$ to be what it needs to be for the equation to go through. $u=k-ve$</li>
+      <li class="fragment">$\scriptsize{u=k-ve \implies uG=kG-veG=kG-vP \implies uG+vP=kG=R}$</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Signature Algorithm</h2>
+    <ul>
+      <li class="fragment">Start with the hash of what is being signed: $z$</li>
+      <li class="fragment">$P=eG$ and the private key is $e$ </li>
+      <li class="fragment">Generate a new random number: $k$</li>
+      <li class="fragment">Compute $kG=R=(x,y)$, let $r=x$</li>
+      <li class="fragment">Compute $s=(z+re/k)$, which can only be done with the private key, $e$</li>
+      <li class="fragment">Signature is the pair $(r,s)$</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Signing Example</h2>
+    <pre><code data-line-numbers="2-5|7|8|9|10|11|12">
+        from random import randint
+
+        from ecc import G, N
+        from helper import hash256
+
+        secret = 1800555555518005555555
+        z = int.from_bytes(hash256(b'hello world'), 'big')
+        k = randint(0, 2**256)
+        r = (k*G).x.num
+        s = (z+r*secret) * pow(k, -1, N) % N
+        print(hex(z), hex(r), hex(s))
+    </code></pre>
+  </section>
+  <section>
+    <h2>Verification Algorithm</h2>
+    <ul>
+      <li class="fragment">Start with the hash of what is being signed: $z$</li>
+      <li class="fragment">$P=eG$ and the public key is $P$ </li>
+      <li class="fragment">Signature is $(r,s)$ where $s=(z+re)/k$</li>
+      <li class="fragment">Compute $u=z/s, v=r/s$</li>
+      <li class="fragment">Compute $uG+vP$</li>
+      <li class="fragment">$uG+vP=(z/s)G+(r/s)P=(z/s)G+(re/s)G \\ =((z+re)/s)G =((z+re)k/(z+re))G \\ =kG=R=(r,y)$</li>
+      <li class="fragment">If the x coordinate of $R$ matches, we have a valid signature.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Verification Example</h2>
+    <pre><code data-line-numbers="2|4-7|8-9|10">
+        from ecc import G, N, S256Point
+
+        z = 0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423
+        r = 0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6
+        s = 0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec
+        point = S256Point(0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574, 0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4)
+        u = z * pow(s, -1, N) % N
+        v = r * pow(s, -1, N) % N
+        print((u*G + v*point).x.num == r)  # True
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 1, 2 and 3</h2>
+    <ol start="1">
+      <li> Are these signatures valid?</li>
+        <pre><code class="hex">
+point = (0x887387e452b8eacc4acfde10d9aaf7f6d9a0f975aabb10d006e4da568744d06c,
+0x61de6d95231cd89026e286df3b6ae4a894a3378e393e93a0f45b666329a0ae34)
+z, r, s = 0xec208baa0fc1c19f708a9ca96fdeff3ac3f230bb4a7ba4aede4942ad003c0f60,
+0xac8d1c87e51d0d441be8b3dd5b05c8795b48875dffe00b7ffcfac23010d3a395,
+68342ceff8935ededd102dd876ffd6ba72d6a427a3edb13d26eb0781cb423c4
+z, r, s = 0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d,
+0xeff69ef2b1bd93a66ed5219add4fb51e11a840f404876325a1e8ffe0529a2c,
+0xc7207fee197d27c618aea621406f6bf5ef6fca38681d82b2f06fddbdce6feab6
+        </code></pre>
+      <li> Write the <code>sign</code> method in class <code>PrivateKey</code></li>
+      <li> Write the <code>verify</code> method in class <code>S256Point</code></li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>DER Signatures </h2>
+    Serialization of a Signature $(r,s)$
+    <div class="bighex"><code class="dark-red">30</code><code class="blue">45</code><code class="purple">02</code><code class="green">21</code><code class="yellow">00ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f</code><code class="purple">02</code><code class="green">20</code><code class="dark-orange">7a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed</code></div>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="dark-red">30</code> - Marker
+        <li class="fragment"><code class="blue">45</code> - Length of signature
+        <li class="fragment"><code class="purple">02</code> - Marker for $r$ value
+        <li class="fragment"><code class="green">21</code> - $r$ value length
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="yellow">00ed…8f</code> - $r$ value in hex
+        <li class="fragment"><code class="purple">02</code> - Marker for $s$ value
+        <li class="fragment"><code class="green">20</code> - $s$ value length
+        <li class="fragment"><code class="dark-orange">7a98…ed</code> - $s$ value in hex
+      </ul>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 4</h2>
+    <ol start="4">
+      <li> Verify the DER signature for the hash of "ECDSA is awesome!" for the given SEC pubkey</li>
+      <pre><code class="hex">
+sec = bytes.fromhex("0204519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574")
+der = bytes.fromhex("304402201f62993ee03fca342fcb45929993fa6ee885e00ddad8de154f268d98f0"
+    "83991402201e1ca12ad140c04e0e022c38f7ce31da426b8009d02832f0b44f39a6b178b7a1")
+z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
+</code></pre>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>What is a Transaction?</h3>
+    <ul>
+      <li class="fragment">Assignment of bitcoin from one script (smart contract) to another</li>
+      <li class="fragment">Addresses are compressed scripts.</li>
+    </ul>
+  </section>
+  <section>
+    <h3 class="fragment">Transaction Structure</h3>
+    <ul>
+      <li class="fragment">Version</li>
+      <li class="fragment">Inputs</li>
+      <li class="fragment">Outputs</li>
+      <li class="fragment">Locktime</li>
+    </ul>
+  </section>
+  <section>
+    <h3 class="fragment">Output</h3>
+    <ul>
+      <li class="fragment">Amount, in Satoshis</li>
+      <li class="fragment">ScriptPubKey (locking)</li>
+    </ul>
+    <p class="fragment">Addresses are compressed ScriptPubKeys</p>
+    <p class="fragment">Amounts can be 0 (for OP_RETURN), but not negative</p>
+  </section>
+  <section>
+    <h3 class="fragment">Input</h3>
+    <ul>
+      <li class="fragment">Previous Tx Hash</li>
+      <li class="fragment">Previous Tx Index</li>
+      <li class="fragment">ScriptSig (unlocking)</li>
+      <li class="fragment">Sequence</li>
+    </ul>
+    <p class="fragment">Previous Tx Hash and Index points to an output of a previous transaction</p>
+    <p class="fragment">Amounts have to be looked up and validated.</p>
+  </section>
+  <section>
+    <h3 >Transaction Structure</h3>
+    <ul>
+      <li >Version</li>
+      <li >Inputs</li>
+      <li >Outputs</li>
+      <li >Locktime</li>
+    </ul>
+    <p class="fragment">Transaction Fee is not specified, but calculated</p>
+    <p class="fragment">Transaction Outputs have only two states, spent and unspent</p>
+    <p class="fragment">Change has to be specified or it ends up as the Transaction Fee</p>
+  </section>
+  <section>
+    <h2>Transaction </h2>
+    Serialization of a Transaction
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li><code class="brown">01000000</code> - Version, 4 bytes, Little Endian
+        <li><code class="red">01</code> - Number of inputs, VarInt
+        <li><code class="blue">813f…d1</code> - Prev tx hash, 32 bytes, LE
+        <li><code class="magenta">00000000</code> - Prev tx index, 4 bytes, LE
+        <li><code class="yellow">6b48…8a</code> - ScriptSig, VarStr</li>
+        <li><code class="purple">feffffff</code> - Sequence
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li><code class="red">02</code> - Number of outputs, VarInt
+        <li><code class="green">a135…00</code> - Amount in Satoshis, 8 bytes, LE
+        <li><code class="dark-orange">1976…ac</code> - ScriptPubKey, VarStr
+        <li><code class="dark-red">19430600</code> - Locktime, 4 bytes, LE
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Version</h2>
+    <div class="medhex"><code class="brown">01000000</code><code>01813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li><code class="brown">01000000</code> - Version, 4 bytes, Little Endian
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 5</h2>
+    <ol start="5">
+      <li> Write the version part of the <code>parse</code> method in the <code>Tx</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Inputs</h2>
+    <div class="medhex"><code>01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code>02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="red">01</code> - Number of inputs, VarInt
+        <li class="fragment"><code class="blue">813f…d1</code> - Prev tx hash, 32 bytes, LE
+        <li class="fragment"><code class="magenta">00000000</code> - Prev tx index, 4 bytes, LE
+        <li class="fragment"><code class="yellow">6b48…8a</code> - ScriptSig, VarStr</li>
+        <li class="fragment"><code class="purple">feffffff</code> - Sequence
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 6</h2>
+    <ol start="6">
+      <li> Write the input part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxIn</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Outputs</h2>
+    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code>19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="red">02</code> - Number of outputs, VarInt
+        <li class="fragment"><code class="green">a135…00</code> - Amount in Satoshis, 8 bytes, LE
+        <li class="fragment"><code class="dark-orange">1976…ac</code> - ScriptPubKey, VarStr
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 7</h2>
+    <ol start="7">
+      <li> Write the output part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxOut</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Locktime</h2>
+    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="dark-red">19430600</code> - Locktime, 4 bytes, LE
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 8</h2>
+    <ol start="8">
+      <li> Write the locktime part of the <code>parse</code> method in the <code>Tx</code>.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <h2>Exercise 9</h2>
+  <ol start="9">
+    <li>What is the ScriptSig from the second input in this tx? What is the ScriptPubKey of the first output in this tx? What is the amount for the second output?</li>
+
+    <p>See Jupyter Notebook for the actual transaction</p>
+  </ol>
+</section>
+</div>
+</div>
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script src="plugin/math/math.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+  });
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+</script>
+</body>
+</html>
