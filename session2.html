@@ -1,0 +1,410 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Session 2 - Elliptic Curve Cryptography</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+<div class="reveal">
+  <div class="slides">
+<section>
+  <h2> Class Schedule </h2>
+  <div class="container">
+    <div class="col">
+      <h3>Day 1</h3>
+      <ul>
+        <li>Foundational Math</li>
+        <li class="current">Elliptic Curve Cryptography</li>
+        <li>Transaction Parsing</li>
+        <li>Script</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Day 2</h3>
+      <ul>
+        <li>Transaction Construction</li>
+        <li>Blocks</li>
+        <li>Simplified Payment Verification</li>
+        <li>Networking and Segwit</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <section>
+    <h1>Elliptic Curve Cryptography</h1>
+  </section>
+  <section>
+    <h2>Session 2 Objectives</h2>
+    <ul>
+      <li class="fragment"><strong>Learn Public Key Cryptography</strong>
+      <li class="fragment"><strong>Learn Mathematical Groups </strong>
+      <li class="fragment"><strong>Create a Testnet Address</strong>
+    </ul>
+  </section>
+  <section>
+    <h2>Elliptic Curves over Finite Fields </h2>
+    <ul>
+      <li class="fragment"><strong>Equations go through, but all $x$ and $y$ are Field elements</strong></li>
+      <li class="fragment"><strong>Point Addition still works!</strong></li>
+      <li class="fragment"><strong>Magic!</strong></li>
+    </ul>
+  </section>
+  <section>
+    <h2>Elliptic Curve over Reals</h2>
+    <img src="assets/s2-s256real.PNG" class="r-stretch"/>
+  </section>
+  <section>
+    <h2>Elliptic Curve over Finite Field</h2>
+    <img src="assets/s2-s256finite.PNG" class="r-stretch"/>
+  </section>
+  <section>
+    <h2>Example</h2>
+    Verify that $(73, 128)$ is on the curve $y^2=x^3+7:F_{137}$
+    \[ y^2 = 128^2 = 81 \pmod{137} \\
+    x^3 + 7 = 73^3 + 7 = 81 \pmod{137}
+    \]
+  </section>
+  <section>
+    <h2>Exercise 1 and 2</h2>
+    <ol start="1">
+      <li> Which of these points are on the curve $y^2=x^3+7:F_{223}$?
+      $(192,105), (17,56), (200,119), (1,193), (42,99)$
+      <li> Write a test called <code>test_on_curve</code> in class <code>ECCTest</code> that tests these points.
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Point Addition over a Finite Field </h2>
+  </section>
+  <section>
+    <h2>Group Law for when $x_1 \neq x_2$</h2>
+    <p>$y^2=x^3+ax+b$</p>
+    <p>$(x_3,y_3) = (x_1, y_1) + (x_2, y_2)$</p>
+    <p>$s = \frac{y_2-y_1}{x_2-x_1}$</p>
+    <p>$x_3 = s^2 - x_1 - x_2$ </p>
+    <p>$y_3 = s(x_1-x_3) - y_1$</p>
+  </section>
+  <section>
+    <h2>Example</h2>
+    <p class="fragment">$y^2=x^3+7:F_{137}$</p>
+    <p class="fragment">What is $(73,128)+(46,22)$?</p>
+    <p class="fragment">$s = \frac{y_2-y_1}{x_2-x_1} = \frac{106}{27} = 106 \cdot 27^{135} = 106 \cdot 66 = 9 \pmod{137}$</p>
+    <p class="fragment">$x_3 = s^2 - x_1 - x_2 = 81 - 73 - 46 = 99 \pmod{137}$ </p>
+    <p class="fragment">$y_3 = s(x_1-x_3) - y_1 = 9 \cdot (73 - 99) - 128 = 49 \pmod{137}$</p>
+    <p class="fragment">$(73, 128) + (46,22)=(99,49)$</p>
+  </section>
+  <section>
+    <h2>Exercise 3 and 4</h2>
+    <ol start="3">
+      <li> For the curve $y^2=x^3+7:F_{223}$, solve these:
+        \[(192,105) + (17,56) \\
+        (47,71) + (117,141) \\
+        (143,98)+(76,66)\]</li>
+      <li> Write a test called <code>test_add</code> to test that these work.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Group Law for when $P_1 = P_2$</h2>
+    <p>$y^2=x^3+ax+b$</p>
+    <p>$(x_3,y_3) = (x_1, y_1) + (x_2, y_2)$</p>
+    <p>$s = \frac{3x_1^2+a}{2y_1}$</p>
+    <p>$x_3 = s^2 - 2x_1$ </p>
+    <p>$y_3 = s(x_1-x_3) - y_1$</p>
+  </section>
+  <section>
+    <h2>Example</h2>
+    <p class="fragment">$y^2=x^3+7:F_{137}$</p>
+    <p class="fragment">What is $2\cdot(73,128)$?</p>
+    <p class="fragment">$s = \frac{3x_1^2+a}{2y_1} = \frac{3 \cdot 73^2}{2 \cdot 128} = \frac{15987}{256} = \frac{95}{119} = 48 \pmod{137}$</p>
+    <p class="fragment">$x_3 = s^2 - 2x_1 = 48^2 - 2 \cdot 73 = 103 \pmod{137}$ </p>
+    <p class="fragment">$y_3 = s(x_1-x_3) - y_1 = 48 \cdot (73-103) - 128 = 76 \pmod{137}$</p>
+    <p class="fragment">$2 \cdot (73, 128)=(103,76)$</p>
+  </section>
+  <section>
+    <h2>Exercise 5</h2>
+    <ol start="5">
+      <li> For the curve $y^2=x^3+7:F_{223}$, Solve these:
+        \[2\cdot(192,105) \\
+        2\cdot(143,98) \\
+        2\cdot(47,71) \\
+        4\cdot(47,71) \\
+        8\cdot(47,71) \\
+        21\cdot(47,71) \]</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Mathematical Groups</h2>
+    <ul>
+      <li class="fragment">Single Operation $+$ over a set $\mathbb{G}$
+      <li class="fragment">Closed: $A, B \in \mathbb{G} \implies A+B \in \mathbb{G}$
+      <li class="fragment">Associative: $(A+B)+C = A+(B+C)$
+      <li class="fragment">Commutative: $A+B = B+A$
+      <li class="fragment">Indentity: $0 \in \mathbb{G}, (\infty, \infty)$
+      <li class="fragment">Invertible: $A \in \mathbb{G} \implies -A \in \mathbb{G}$
+      <li class="fragment">Point addition creates groups!
+    </ul>
+  </section>
+  <section>
+    <h2>Closed, Commutative, Identity, Invertible</h2>
+    <img class="r-stretch" src="assets/s1-pointaddition.PNG">
+  </section>
+  <section>
+    <h2>Associative</h2>
+    <div class="container">
+      <div class="col">
+        <img src="assets/s2-associative1.PNG">
+      </div>
+      <div class="col">
+        <img src="assets/s2-associative2.PNG">
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Generating a Group using Point Addition</h2>
+    <ul>
+      <li class="fragment">Start with an Elliptic Curve over a Finite Field
+      <li class="fragment">Pick a point $G$, called a <em>generator point</em>
+      <li class="fragment">Add $G$ to make more elements until we get $(\infty, \infty)$
+      <li class="fragment">$G+G=2G, G+G+G=3G, 4G, 5G... nG=(\infty, \infty)$
+      <li class="fragment">$\mathbb{G} = \{0, G, 2G, ..., (n-1)G\}$
+    </ul>
+  </section>
+  <section>
+    <h2>Example</h2>
+    <p class="fragment">$y^2=x^3+7:F_{223}$, Group from $G=(47,71)$:</p>
+    <p class="fragment">
+      \[\scriptsize{
+      G=(47, 71), 2G=(36, 111), 3G=(15, 137), \\
+      4G=(194, 51), 5G=(126, 96), 6G=(139, 137), \\
+      7G=(92, 47), 8G=(116, 55), 9G=(69, 86), \\
+      10G=(154, 150), 11G=(154, 73), 12G=(69, 137), \\
+      13G=(116, 168), 14G=(92, 176), 15G=(139, 86), \\
+      16G=(126, 127), 17G=(194, 172), 18G=(15, 86), \\
+      19G=(36, 112), 20G=(47, 152), 21G=(\infty,\infty)}
+      \]</p>
+    <p class="fragment">$\mathbb{G}$ has 21 elements
+  </section>
+  <section>
+    <h2>Exercise 6 and 7</h2>
+    <ol start="6">
+      <li> For the curve $y^2=x^3+7:F_{223}$, how many elements does the group generated by $(15, 86)$ have?</li>
+      <li> Write the test for <code>__rmul__</code></li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Making Groups Useful</h2>
+    <ul>
+      <li class="fragment">Imagine a really large group $~2^{256}$
+      <li class="fragment">$P=sG$ where $s$ is very large
+      <li class="fragment">Finding $P$ when we know $s$ is easy
+      <li class="fragment">Finding $s$ when we know $P$ is not
+      <li class="fragment">This is called the <em>Discrete Log Problem</em>
+      <li class="fragment">By convention, lower case for scalars, upper case for points.
+    </ul>
+  </section>
+  <section>
+    <h2>Elliptic Curve Definition</h2>
+    <ul>
+      <li class="fragment">Elliptic Curve Equation $a$ and $b$ where $y^2=x^3+ax+b$
+      <li class="fragment">Finite Field prime $p$
+      <li class="fragment">Generator Point $G$
+      <li class="fragment">Number of points in $\mathbb{G}$ which is generated from $G$
+    </ul>
+  </section>
+  <section>
+    <h2>secp256k1</h2>
+    <ul>
+      <li class="fragment">$a=0$ and $b=7$ so $y^2=x^3+7$
+      <li class="fragment">$p=2^{256}-2^{32}-977$
+      <li class="fragment">$G = \tiny{(79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, \\ 483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)}$
+      <li class="fragment">$n = \tiny{FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141}$
+    </ul>
+  </section>
+  <section>
+    <h2>$2^{256}$ is really big</h2>
+    <ul>
+      <li class="fragment">$2^{256} \approx 10^{77}$
+      <li class="fragment">Number of atoms in and on earth $\approx 10^{50}$
+      <li class="fragment">Number of atoms in the solar system $\approx 10^{57}$
+      <li class="fragment">Number of atoms in the Milky Way $\approx 10^{68}$
+      <li class="fragment">Number of atoms in the universe $\approx 10^{80}$
+      <li class="fragment">A trillion ($10^{12}$) computers doing a trillion operations every trillionth ($10^{-12}$) of a second for a trillion years $ < 10^{56}$ operations
+    </ul>
+  </section>
+  <section>
+    <h2>Confirm $G$ is on the curve $y^2=x^3+7:F_p$</h2>
+    <pre><code>
+        p = 2**256 - 2**32 - 977
+        x = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+        y = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8
+        print(y**2 % p == (x**3 + 7) % p)  # True
+    </code></pre>
+  </section>
+  <section>
+    <h2>Confirm the order of $G$ is $n$ on the curve $y^2=x^3+7:F_p$</h2>
+    <pre><code>
+        from ecc import G
+        n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+        print(n*G)  # Point(infinity)
+    </code></pre>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Public Key Cryptography</h2>
+    <ul>
+      <li class="fragment">Private key is the scalar $s$
+      <li class="fragment">Public key is the resulting point $sG=P$
+      <li class="fragment">Public key is two numbers $(x,y)$
+    </ul>
+  </section>
+  <section>
+    <h2>Example</h2>
+    <pre><code>
+        from ecc import G
+        secret = 999
+        point = secret*G
+        print(point)
+
+        Point(9680241112d370b56da22eb535745d9e314380e568229e09f7241066003bc471, ddac2d377f03c201ffa0419d6596d10327d6c70313bb492ff495f946285d8f38)
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 7 and 8</h2>
+    <ol start="7">
+      <li> Get the public points where the private keys are
+        \[s=7 \\
+        s=1485 \\
+        s=2^{128} \\
+        s=2^{240}+2^{31}
+        \]
+      <li> Write the test <code>test_pubpoint</code></li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h1>Addresses</h1>
+  </section>
+  <section>
+    <h2>SEC format</h2>
+    <ul>
+      <li class="fragment">Serialization of the public key $P$
+      <li class="fragment">Uncompressed: <div class="hex"><code class="purple">04</code><code class="yellow">7211a824f55b505228e4c3d5194c1fcfaa15a456abdf37f9b9d97a4040afc073</code><code class="orange">dee6c89064984f03385237d92167c13e236446b417ab79a0fcae412ae3316b77</code></div></li>
+        <ul>
+          <li class="fragment"><code class="purple">04</code> - Marker</li>
+          <li class="fragment"><code class="yellow">72...73</code> - x-coordinate in hex</li>
+          <li class="fragment"><code class="orange">de...77</code> - y-coordinate in hex</li>
+        </ul>
+      <li class="fragment">Compressed: <div class="hex"><code class="purple">03</code><code class="yellow">7211a824f55b505228e4c3d5194c1fcfaa15a456abdf37f9b9d97a4040afc073</code></div></li>
+        <ul>
+          <li class="fragment"><code class="purple">03</code> - Marker, <code class="purple">02</code> when $y$ is even <code class="purple">03</code> when $y$ is odd </li>
+          <li class="fragment"><code class="yellow">72...73</code> - x-coordinate in hex</li>
+        </ul>
+    </ul>
+  </section>
+  <section>
+    <h2>Example</h2>
+      <p class="fragment">$P = \tiny{(5CBDF0646E5DB4EAA398F365F2EA7A0E3D419B7E0330E39CE92BDDEDCAC4F9BC, \\ 6AEBCA40BA255960A3178D6D861A54DBA813D0B813FDE7B5A5082628087264DA)}$</p>
+    <p class="fragment">Uncompressed: </p>
+    <pre><code class="hex">045CBDF0646E5DB4EAA398F365F2EA7A0E3D419B7E0330E39CE92BDDEDCAC4F9BC6AEBCA40BA255960A3178D6D861A54DBA813D0B813FDE7B5A5082628087264DA</code></pre>
+    <p class="fragment">Compressed: </p>
+    <pre><code class="hex">025CBDF0646E5DB4EAA398F365F2EA7A0E3D419B7E0330E39CE92BDDEDCAC4F9BC</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 9 and 10</h2>
+    <ol start="9">
+      <li> Calculate the compressed and uncompressed SEC format for the public keys whose private keys are
+        \[s=999^{3} \\
+        s=123 \\
+        s=42424242
+        \]
+      <li> Write the <code>sec</code> method.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Address Computation</h2>
+    <ul>
+      <li class="fragment">Start with either the compressed or uncompressed SEC format public key.
+      <li class="fragment">SHA256 the result and then RIPEMD160 the result. This is known in Bitcoin as <em>HASH160</em>.
+      <li class="fragment">Prepend the network prefix (<code>00</code> for mainnet <code>6f</code> for testnet)
+      <li class="fragment">Add a 32-bit/4-byte HASH256 checksum at the end. <em>HASH256</em> in Bitcoin is two rounds of SHA256
+      <li class="fragment">Encode the result in Base58
+  </section>
+  <section>
+    <h2>Example</h2>
+    <pre><code>
+        from helper import encode_base58, hash160, hash256
+        sec = bytes.fromhex('025CBDF0646E5DB4EAA398F365F2EA7A0E3D419B7E0330E39CE92BDDEDCAC4F9BC')
+        h160 = hash160(sec)
+        raw = b"\x00" + h160
+        raw = raw + hash256(raw)[:4]
+        addr = encode_base58(raw)
+        print(addr)  # 19ZewH8Kk1PDbSNdJ97FP4EiCjTRaZMZQA
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 11, 12 and 13</h2>
+    <ol start="11">
+      <li> Find the mainnet and testnet address corresponding to these private keys:
+        <ul>
+          <li>$s = 888^3$, sec = Compressed
+          <li>$s = 321$, sec = Uncompressed
+          <li>$s = 4242424242$, sec = Uncompressed
+        </ul>
+      <li>Write the <code>encode_base58_checksum</code> function
+      <li> Write the <code>address</code> method
+    </ol>
+  </section>
+</section>
+  <section>
+    <h2>Checkpoint: Exercise 14</h2>
+    <ol start="14">
+      <li> Create a testnet address using your own private key. Put the address <a href="https://docs.google.com/spreadsheets/d/1tnqQZktwO7kIdiAQjz0S3fh80FkoxuhDQEeBObDJBL4/edit?usp=sharing">here</a>.
+
+        <strong>Record the private key and address somewhere! You will need it tomorrow.</strong>
+    </ol>
+  </section>
+</div>
+</div>
+
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script src="plugin/math/math.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+  });
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+</script>
+</body>
+</html>

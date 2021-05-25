@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Programming Blockchain</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2> Sessions </h2>
+          <div class="container">
+            <div class="col">
+              <h3>Day 1</h3>
+              <ul>
+                <li><a href="session1.html">Foundational Math</a></li>
+                <li><a href="session2.html">Elliptic Curve Cryptography</a></li>
+                <li><a href="session3.html">Transaction Parsing</a></li>
+                <li><a href="session4.html">Script</a></li>
+              </ul>
+            </div>
+            <div class="col">
+              <h3>Day 2</h3>
+              <ul>
+                <li>Transaction Construction</li>
+                <li>Blocks</li>
+                <li>Simplified Payment Verification</li>
+                <li>Networking and Segwit</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/math/math.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+          hash: true,
+          plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+      });
+      MathJax.Hub.Config({
+          jax: ["input/TeX","output/HTML-CSS"],
+          displayAlign: "left"
+      });
+    </script>
+  </body>
+</html>

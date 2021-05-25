@@ -1,0 +1,25 @@
+.container{
+  display: flex;
+}
+.col{
+  flex: 1;
+}
+.current{
+  color: #33B;
+}
+.purple{
+  color: #A0F;
+  background-color: #d9d2e9;
+}
+.yellow{
+  color: black;
+  background-color: #FF0;
+}
+.orange{
+  color: black;
+  background-color:#FA0;
+}
+.hex{
+  font-size: 20px;
+  word-break: break-all;
+}
