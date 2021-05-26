@@ -1,0 +1,601 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Session 5 - Transaction Construction</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+<div class="reveal">
+  <div class="slides">
+<section>
+  <h2> Class Schedule </h2>
+  <div class="container">
+    <div class="col">
+      <h3>Day 1</h3>
+      <ul>
+        <li>Foundational Math</li>
+        <li>Elliptic Curve Cryptography</li>
+        <li>Transaction Parsing</li>
+        <li>Script</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Day 2</h3>
+      <ul>
+        <li class="current">Transaction Construction</li>
+        <li>Blocks</li>
+        <li>Simplified Payment Verification</li>
+        <li>Networking and Segwit</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <section>
+    <h2>Introductions</h2>
+    <h3 class="fragment">What do you hope to do with the knowledge that you're gaining?</h3>
+  </section>
+  <section>
+    <h1>Transaction Construction</h1>
+  </section>
+  <section>
+    <h2>Session 5 Objectives</h2>
+    <ul>
+      <li class="fragment"><strong>Learn to construct transactions</strong>
+      <li class="fragment"><strong>Learn about multisig</strong>
+      <li class="fragment"><strong>Learn P2SH</strong>
+    </ul>
+  </section>
+  <section>
+    <h2>Exercise 1</h2>
+    <ul start="1">
+      <li>Write the <code>verify_input</code> method in the <code>Tx</code> class.</li>
+    </ul>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Construction Plan</h2>
+    <ul>
+      <li class="fragment">Spend from a single UTXO:<br/> <code class="hex">8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149:4</code></li>
+      <li class="fragment">Out of the 0.48 TBTC in this UTXO:
+        <ul class="medhex">
+          <li class="fragment">0.1 TBTC to mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf</li>
+          <li class="fragment">0.37 TBTC to go back to the same address</li>
+          <li class="fragment">0.01 TBTC for the fee</li>
+        </ul>
+    </ul>
+  </section>
+  <section>
+    <h2>Example</h2>
+    <pre><code class="medhex" data-line-numbers="1-4|6|7-8|9|10|11-15|16-20|21|22|23-25|26|27|29">from ecc import PrivateKey
+from helper import decode_base58, SIGHASH_ALL
+from script import p2pkh_script, Script
+from tx import TxIn, TxOut, Tx
+
+tx_ins = []
+prev_tx = bytes.fromhex('8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149')
+prev_index = 4
+tx_ins.append(TxIn(prev_tx, prev_index))
+tx_outs = []
+h160 = decode_base58('mzx5YhAH9kNHtcN481u6WkjeHjYtVeKVh2')
+tx_outs.append(TxOut(
+    amount=int(0.38*100000000),
+    script_pubkey=p2pkh_script(h160),
+))
+h160 = decode_base58('mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf')
+tx_outs.append(TxOut(
+    amount=int(0.1*100000000),
+    script_pubkey=p2pkh_script(h160),
+))
+tx_obj = Tx(1, tx_ins, tx_outs, 0, testnet=True)
+z = tx_obj.sig_hash(0)
+pk = PrivateKey(secret=8675309)
+der = pk.sign(z).der()
+sig = der + SIGHASH_ALL.to_bytes(1, 'big')
+sec = pk.point.sec()
+tx_obj.tx_ins[0].script_sig = Script([sig, sec])
+
+print(tx_obj.serialize().hex())
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 2</h2>
+    <ol start="2">
+      <li> Write the <code>sign_input</code> method in the <code>Tx</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Checkpoint: Exercise 3 and 4</h2>
+    <ol start="3">
+      <li> You have been sent 0.1 TBTC. Send 0.04 TBTC to this address: <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>. <br/>
+      Send your transaction <a href="https://blockstream.info/testnet/tx/push">here</a></li>
+      <li> Bonus: Go to a testnet faucet and get some more coins. Use *both* inputs and send to the same address.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Bare Multisig</h2>
+    <div class="fragment">ScriptPubKey:
+      <div class="medhex"><code class="red">51</code><code class="green">41</code><code class="yellow">04fcf07bb1222f7925f2b7cc15183a40443c578e62ea17100aa3b44ba66905c95d4980aec4cd2f6eb426d1b1ec45d76724f26901099416b9265b76ba67c8b0b73d</code><code class="green">21</code><code class="yellow">0202be80a0ca69c0e000b97d507f45b98c49f58fec6650b64ff70e6ffccc3e6d00</code><code class="red">52</code><code class="brown">ae</code></div>
+      <div class="container">
+        <div class="col">
+          <ul class="fragment medhex">
+            <li><code class="red">51</code> - <code>OP_1</code></li>
+            <li><code class="green">41</code> - length of PubKey</li>
+            <li><code class="yellow">04fc…3d</code> - SEC PubKey</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul class="fragment medhex">
+            <li><code class="red">52</code> - <code>OP_2</code></li>
+            <li><code class="brown">ae</code> - <code>OP_CHECKMULTISIG</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="fragment">ScriptSig:
+      <div class="medhex"><code class="red">00</code><code class="green">48</code><code class="cyan">3045022100e222a0a6816475d85ad28fbeb66e97c931081076dc9655da3afc6c1d81b43f9802204681f9ea9d52a31c9c47cf78b71410ecae6188d7c31495f5f1adfe0df5864a7401</code></div>
+
+      <ul class="fragment medhex">
+        <li><code class="red">00</code> - <code>OP_0</code></li>
+        <li><code class="green">48</code> - length of Signature</li>
+        <li><code class="cyan">3045…01</code> - DER Signature</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Combined Script</h2>
+    <div class="container">
+    <div class="stack">
+      <div class="row">
+        ScriptPubKey
+      </div>
+      <div class="row">
+        <span class="op red">OP_1</span>
+      </div>
+      <div class="row">
+        <span class="elem blue">PubKey 1</span>
+      </div>
+      <div class="row">
+        <span class="elem blue">PubKey 2</span>
+      </div>
+      <div class="row">
+        <span class="op red">OP_2</span>
+      </div>
+      <div class="row">
+        <span class="op brown">OP_CHECKMULTISIG</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="row">
+        ScriptSig
+      </div>
+      <div class="row">
+        <span class="op red">OP_0</span>
+      </div>
+      <div class="row">
+        <span class="elem brown">Signature 1</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="row">
+        Combined
+      </div>
+      <div class="row">
+        <span class="op red">OP_0</span>
+      </div>
+      <div class="row">
+        <span class="elem brown">Signature 1</span>
+      </div>
+      <div class="row">
+        <span class="op red">OP_1</span>
+      </div>
+      <div class="row">
+        <span class="elem blue">PubKey 1</span>
+      </div>
+      <div class="row">
+        <span class="elem blue">PubKey 2</span>
+      </div>
+      <div class="row">
+        <span class="op red">OP_2</span>
+      </div>
+      <div class="row">
+        <span class="op brown">OP_CHECKMULTISIG</span>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="videocontainer">
+      <iframe data-autoplay class="video" src="https://www.youtube.com/embed/kxKT4iNOC70" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </section>
+  <section>
+    <code>op_checkmultisig</code>
+    <pre><code data-line-numbers="1-3|4-6|7-9|10-12|13-15|16|17-20">def op_checkmultisig(stack, z):
+    if len(stack) < 1:
+        return False
+    n = decode_num(stack.pop())
+    if len(stack) < n + 1:
+        return False
+    sec_pubkeys = []
+    for _ in range(n):
+        sec_pubkeys.append(stack.pop())
+    m = decode_num(stack.pop())
+                    if len(stack) < m + 1:
+                                    return False
+                                    der_signatures = []
+                                    for _ in range(m):
+                                    der_signatures.append(stack.pop()[:-1])
+                                    stack.pop()
+                                    try:
+                                    raise NotImplementedError
+                                    except (ValueError, SyntaxError):
+                                    return False
+                                    return True
+                                    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 5</h2>
+    <ol start="4">
+      <li>Write the <code>op_checkmultisig</code> function.</li>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>Bare Multisig problems</h3>
+    <ul>
+      <li class="fragment">Off by one bug, <code>OP_CHECKMULTISIG</code> consumes 1 more item than necessary and requires a hard fork to fix</li>
+      <li class="fragment">Very hard to make into an address</li>
+      <li class="fragment">Big transaction output for UTXO set</li>
+      <li class="fragment">Abused</li>
+    </ul>
+  </section>
+  <section>
+    <a href="https://bitcoin.stackexchange.com/questions/35959/how-is-the-whitepaper-decoded-from-the-blockchain-tx-with-1000x-m-of-n-multisi/105574"><img src="assets/s5-whitpaper.PNG"></a>
+  </section>
+  <section>
+    <h2>Pay-to-Script-Hash (p2sh)</h2>
+  </section>
+  <section>
+    <h3>Motivation</h3>
+    <ul>
+      <li class="fragment">Shorter addresses (same length as p2pkh, but starts with a 3)</li>
+      <li class="fragment">Smaller UTXO</li>
+      <li class="fragment">More privacy as sender does not know about the actual way in which the funds can be spent.</li>
+      <li class="fragment">Flexible because part of Script is kept by creator (RedeemScript)</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Implementation</h3>
+    <ul>
+      <li class="fragment">Recipient creates a RedeemScript</li>
+      <li class="fragment">Recipient sends the hash digest of the RedeemScript to the sender encoded as a Base58 address </li>
+      <li class="fragment">Sender sends to the hash of the RedeemScript.</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Pay-to-Script-Hash</h3>
+    <div class="fragment medhex">ScriptPubKey:
+      <code class="purple">a9</code><code class="green">14</code><code class="dark-orange">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><code class="red">87</code>
+      <ul class="fragment">
+        <li><code class="purple">a9</code> - <code>OP_HASH160</code></li>
+        <li><code class="green">14</code> - Length of hash</li>
+        <li><code class="dark-orange">74d6…56</code> - hash</li>
+        <li><code class="red">87</code> - <code>OP_EQUAL</code></li>
+      </ul>
+    </div>
+    <div class="fragment medhex">ScriptSig:
+      <code class="red">00</code><code class="green">48</code><code class="cyan">3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</code><code class="green">48</code><code class="cyan">3045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201</code><code class="brown">47</code><code class="yellow">5221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>
+      <ul class="fragment">
+        <li><code class="red">00</code> - <code>OP_0</code></li>
+        <li><code class="green">48</code> - Length of Signature</li>
+        <li><code class="cyan">3045…01</code> - DER Signature</li>
+        <li><code class="brown">47</code> - Length of RedeemScript</li>
+        <li><code class="yellow">5221…ae</code> - RedeemScript</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Combined Script</h2>
+    <div class="container">
+      <div class="stack">
+        <div class="row">
+          ScriptPubKey
+        </div>
+        <div class="row">
+          <span class="op purple">OP_HASH160</span>
+        </div>
+        <div class="row">
+          <span class="elem green">Hash</span>
+        </div>
+        <div class="row">
+          <span class="op brown">OP_EQUAL</span>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="row">
+          ScriptSig
+        </div>
+        <div class="row">
+          <span class="op red">OP_0</span>
+        </div>
+        <div class="row">
+          <span class="elem brown">Signature 1</span>
+        </div>
+        <div class="row">
+          <span class="elem brown">Signature 2</span>
+        </div>
+        <div class="row">
+          <span class="elem blue">RedeemScript</span>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="row">
+          Combined
+        </div>
+        <div class="row">
+          <span class="op red">OP_0</span>
+        </div>
+        <div class="row">
+          <span class="elem brown">Signature 1</span>
+        </div>
+        <div class="row">
+          <span class="elem brown">Signature 2</span>
+        </div>
+        <div class="row">
+          <span class="elem blue">RedeemScript</span>
+        </div>
+        <div class="row">
+          <span class="op purple">OP_HASH160</span>
+        </div>
+        <div class="row">
+          <span class="elem green">Hash</span>
+        </div>
+        <div class="row">
+          <span class="op brown">OP_EQUAL</span>
+        </div>
+      </div>
+  </section>
+  <section>
+    <div class="videocontainer">
+      <iframe data-autoplay class="video" src="https://www.youtube.com/embed/aR-cORfO7zg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 6</h2>
+    <ol start="6">
+      <li> Find the Hash160 of this RedeemScript:</li>
+      <div class="bighex">
+        <code>5221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>
+      </div>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Parsing RedeemScript</h2>
+    <div class="fragment bighex">
+      <code class="red">52</code><code class="green">21</code><code class="yellow">022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70</code><code class="green">21</code><code class="yellow">03b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb71</code><code class="red">52</code><code class="brown">ae</code><br/>
+      <ul class="fragment">
+        <li><code class="red">52</code> - <code>OP_2</code></li>
+        <li><code class="green">21</code> - Length of PubKey</li>
+        <li><code class="yellow">0226…70</code> - SEC PubKey</li>
+        <li><code class="brown">ae</code> - <code>OP_CHECKMULTISIG</code></li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Modifying Script VM</h3>
+<pre><code data-line-numbers="5-7|9|11-12|13|14-15|16-18|19|20|21">def evaluate(z):
+    ...
+    else:
+    stack.append(command)
+    if len(commands) == 3 and commands[0] == 0xa9 \
+    and type(commands[1]) == bytes and len(commands[1]) == 20 \
+    and commands[2] == 0x87:
+    commands.pop()
+    h160 = commands.pop()
+    commands.pop()
+    if not op_hash160(stack):
+    return False
+    stack.append(h160)
+    if not op_equal(stack):
+    return False
+    if not op_verify(stack):
+    print('bad p2sh h160')
+    return False
+    redeem_script = encode_varint(len(command)) + command
+    stream = BytesIO(redeem_script)
+    commands.extend(Script.parse(stream).commands)
+</code></pre>
+</section>
+<section>
+  <h2>P2SH Notes</h2>
+  <ul>
+    <li class="fragment">RedeemScript was made new as a part of the introduction of p2sh (BIP0016)</li>
+    <li class="fragment">RedeemScript will be added to the processing queue only if the hash matches the hash in ScriptPubKey
+    </li>
+    <li class="fragment">RedeemScript substitution is a bit hacky and was a huge controversy at the time.</li>
+  </ul>
+</section>
+<section>
+  <h3>P2SH Transaction</h3>
+  <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">db00483045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
+    <div class="container">
+      <div class="col">
+        <ul>
+          <li><code class="brown">01000000</code> - Version</li>
+          <li><code class="red">01</code> - Number of inputs</li>
+          <li><code class="blue">8682…22</code> - Prev tx hash</li>
+          <li><code class="magenta">1a000000</code> - Prev tx index</li>
+          <li><code class="yellow">db00…ae</code> - ScriptSig</li>
+          <li><code class="purple">ffffffff</code> - Sequence</li>
+        </ul>
+      </div>
+      <div class="col">
+        <ul>
+          <li><code class="red">04</code> - Number of outputs</li>
+          <li><code class="green">d3b1…00</code> - Amount</li>
+          <li><code class="dark-orange">1976…ac</code> - p2pkh ScriptPubKey
+          <li><code class="light-blue">17a9…87</code> - p2sh ScriptPubKey
+          <li><code class="dark-red">19430600</code> - Locktime, 4 bytes, LE
+        </ul>
+      </div>
+    </div>
+</section>
+<section>
+  <h2>P2SH Addresses</h2>
+  <code class="bighex">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><br/>
+  <ul>
+    <li class="fragment">BIP0013 defines how to turn the Hash160 into an address</li>
+    <li class="fragment">For mainnet prepend the byte <code>05</code> and for testnet, prepend the byte <code>c4</code></li>
+    <li class="fragment">This results in addresses that start with 3 on mainnet and 2 on testnet</li>
+  </ul>
+  <h3 class="fragment">Example</h3>
+  <pre><code class="fragment">
+      from helper import encode_base58_checksum
+      print(encode_base58_checksum(b'\x05'+bytes.fromhex('74d691da1574e6b3c192ecfb52cc8984ee7b6c56')))  # 3CLoMMyuoDQTPRD3XYZtCvgvkadrAdvdXh
+  </code></pre>
+</section>
+<section>
+  <h2>Exercise 7, 8 and 9</h2>
+  <ol start="7">
+    <li>Write the <code>h160_to_p2pkh_address</code> function.</li>
+    <li>Write the <code>h160_to_p2sh_address</code> function.</li>
+    <li>Write the <code>is_p2pkh_script_pubkey</c
+                                                ode> method for the <code>TxIn</code> class.</li>
+  </ol>
+</section>
+</section>
+<section>
+  <section>
+    <h2>Checking Inputs &gt; Outputs</h2>
+    <pre><code class="fragment">
+        # Check that input> amounts = output amounts
+input_sum = 42505594
+output_sum = 32454049 + 10011545  # 42465594
+input_sum >= output_sum  # True
+fee = input_sum - output_sum  # 40000
+</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 9 and 10</h2>
+    <ol start="9">
+      <li>How much is the fee for the transaction in Jupyter?</li>
+      <li>Write the <code>fee</code> method for the <code>Tx</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Checking that the ScriptSig is Valid</h2>
+    <ul>
+      <li class="fragment">To do this generally, the Script engine needs to be run on the ScriptSig and ScriptPubKey.</li>
+      <li class="fragment">In practice, the thing you need to check is the signature.</li>
+      <li class="fragment">Public Key and Signature are usually in the ScriptSig field.</li>
+      <li class="fragment">Hard part is figuring out $z$, which is the hash of what was signed.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Getting $z$ - Step 1</h2>
+    Empty ScriptSigs from every input
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    becomes
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">00</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+  </section>
+  <section>
+    <h2>Getting $z$ - Step 2</h2>
+    Replace the ScriptSig of the input that was signed with the previous transaction ScriptPubKey
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">00</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    becomes
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+  </section>
+  <section>
+    <h2>Getting $z$ - Step 3</h2>
+    Append a 4-byte hash type. In practice, this is almost always <code>01000000</code>
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    becomes
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code><code class="light-blue">01000000</code></div>
+  </section>
+  <section>
+    <h2>Getting $z$ - Step 4</h2>
+    Perform a hash256 and interpret in Big-Endian to get $z$
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code><code class="light-blue">01000000</code></div>
+    <pre><code>
+from helper import hash256
+
+modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
+h = hash256(modified_tx)
+z = int.from_bytes(h, 'big')
+print(hex(z))  # 0x27e0c5994dec7824e56dec6b2fcb342eb7cdb0d0957c2fce9882f715e85d81a6
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 11</h2>
+    <ol start="11">
+      <li>Write the <code>sig_hash</code> method for the <code>Tx</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Using $z$</h2>
+    Check the signature using the PubKey and $z$
+    <pre><code>
+from io import BytesIO
+from helper import hash256
+from tx import Tx
+modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
+h256 = hash256(modified_tx)
+z = int.from_bytes(h256, 'big')
+stream = BytesIO(bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000'))
+transaction = Tx.parse(stream)
+tx_in = transaction.tx_ins[0]
+combined_script = tx_in.script_sig + tx_in.script_pubkey()
+print(combined_script.evaluate(z))  # True
+    </code></pre>
+  </section>
+  <section>
+    <h2>Exercise 12</h2>
+    <ol start="12">
+      <li>Validate the signature for the first input of this transaction</li>
+      <code class="hex">01000000012f5ab4d2666744a44864a63162060c2ae36ab0a2375b1c2b6b43077ed5dcbed6000000006a473044022034177d53fcb8e8cba62432c5f6cc3d11c16df1db0bce20b874cfc61128b529e1022040c2681a2845f5eb0c46adb89585604f7bf8397b82db3517afb63f8e3d609c990121035e8b10b675477614809f3dde7fd0e33fb898af6d86f51a65a54c838fddd417a5feffffff02c5872e00000000001976a91441b835c78fb1406305727d8925ff315d90f9bbc588acae2e1700000000001976a914c300e84d277c6c7bcf17190ebc4e7744609f8b0c88ac31470600</code>
+    </ol>
+  </section>
+</section>
+</div>
+</div>
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script src="plugin/math/math.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+  });
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+</script>
+</body>
+</html>
