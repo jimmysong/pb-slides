@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Session 6 - Block</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+<div class="reveal">
+  <div class="slides">
+<section>
+  <h2> Class Schedule </h2>
+  <div class="container">
+    <div class="col">
+      <h3>Day 1</h3>
+      <ul>
+        <li>Foundational Math</li>
+        <li>Elliptic Curve Cryptography</li>
+        <li>Transaction Parsing</li>
+        <li>Script</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Day 2</h3>
+      <ul>
+        <li>Transaction Construction</li>
+        <li class="current">Blocks</li>
+        <li>Simplified Payment Verification</li>
+        <li>Networking and Segwit</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <section>
+    <h1>Blocks</h1>
+  </section>
+  <section>
+    <h2>Session 3 Objectives</h2>
+    <ul>
+      <li class="fragment"><strong>Learn Coinbase Transactions</strong>
+      <li class="fragment"><strong>Learn Block Structure </strong>
+      <li class="fragment"><strong>Learn Block Parsing </strong>
+      <li class="fragment"><strong>Learn Proof-of-Work Calculation</strong>
+    </ul>
+  </section>
+  <section>
+    <h2>Coinbase Transactions</h2>
+  </section>
+  <section>
+    <h2>What is a Coinbase Transaction?</h2>
+    <ul>
+      <li class="fragment">First Transaction of Every Block</li>
+      <li class="fragment">How Bitcoins come into existence</li>
+      <li class="fragment">Miner Reward</li>
+      <li class="fragment">Used as Extra Nonce Space</li>
+    </ul>
+  </section>
+  <section>
+    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">0000000000000000000000000000000000000000000000000000000000000000</code><code class="magenta">ffffffff</code><code class="yellow">5e03d71b07254d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code><code class="purple">ffffffff</code><code class="red">01</code><code class="green">faf20b5800000000</code><code class="dark-orange">1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code>00000000</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li><code class="brown">01000000</code> - Version</li>
+        <li><code class="red">01</code> - Number of inputs</li>
+        <li><code class="blue">0000…00</code> - Prev tx hash</li>
+        <li><code class="magenta">ffffffff</code> - Prev tx index</li>
+        <li><code class="yellow">5e03…00</code> - ScriptSig</li>
+        <li><code class="purple">ffffffff</code> - Sequence</li>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li><code class="red">01</code> - Number of outputs</li>
+        <li><code class="green">faf2…00</code> - Amount</li>
+        <li><code class="dark-orange">1976…ac</code> - ScriptPubKey</li>
+        <li><code class="dark-red">00000000</code> - Locktime</li>
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 1</h2>
+    <ol start="1">
+      <li>Write the <code>is_coinbase</code> method for the class <code>Tx</code></li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Coinbase ScriptSig</h2>
+    <div class="bighex"><code class="purple">03d71b07</code><code class="blue">25</code><code class="red">4d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101</code><code class="yellow">fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code>
+      <ul>
+        <li class="fragment"><code class="purple">03d71b07</code> - Required from BIP0034, <code>03</code> is the length of the element and the rest is the height in little endian: 465879</li>
+        <li class="fragment"><code class="blue">25</code> - Length of extra text</li>
+        <li class="fragment"><code class="red">4d69…01</code> - Miner text <code>Mined by AntPool bj11/EB1/AD6/C Y</code></li>
+        <li class="fragment"><code class="yellow">fabe…00</code> - Nonce space or used for merge mining.</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 2, 3 and 4</h2>
+    <ol start="2">
+      <li>Print the Genesis Block Coinbase Transaction's ScriptSig's third item</li>
+      <li>Write the <code>coinbase_height</code> function</li>
+      <li>Find the address corresponding to the ScriptPubkey: <code>1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code></li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Blocks</h2>
+  </section>
+  <section>
+    <h3>What is a Block</h3>
+    <ul>
+      <li class="fragment">Group of transactions secured by proof-of-work</li>
+      <li class="fragment">Block Header is Block metadata</li>
+      <li class="fragment">Block Headers are 80 bytes each, so it's easy to store all headers (~56MB) or less than 5MB per year.</li>
+      <li class="fragment">Full Block is Block Header + Transactions</li>
+    </ul>
+  </section>
+  <section>
+    <h3 class="fragment">Block Structure</h3>
+    <ul>
+      <li class="fragment">Version - 4 bytes</li>
+      <li class="fragment">Previous Block Hash - 32 bytes</li>
+      <li class="fragment">Merkle Root - 32 bytes</li>
+      <li class="fragment">Timestamp - 4 bytes</li>
+      <li class="fragment">Bits - 4 bytes</li>
+      <li class="fragment">Nonce - 4 bytes</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Block Header Elements</h2>
+    <div class="medhex"><code class="brown">02000020</code><code class="red">8ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd000000000000000000</code><code class="blue">5b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be</code><code class="purple">1e77a759</code><code class="green">e93c0118</code><code class="yellow">a4ffd71d</code>
+      <p/>
+      <ul>
+        <li class="fragment"><code class="brown">02000020</code> - Version, 4 bytes, Little Endian
+        <li class="fragment"><code class="red">8ec3…00</code> - Prev block hash, 32 bytes, LE
+        <li class="fragment"><code class="blue">5b07…be</code> - Merkle Root, 32 bytes, LE</li>
+        <li class="fragment"><code class="purple">1e77a759</code> - Timestamp</li>
+        <li class="fragment"><code class="green">e93c0118</code> - bits</li>
+        <li class="fragment"><code class="yellow">a4ffd71d</code> - Nonce</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 5, 6, 7, 8 and 9</h2>
+    <code class="medhex">020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d</code><p/>
+    <ol start="5">
+      <li> What is the hash256 of this block? Notice anything? </li>
+      <li> Write the <code>parse</code> method in the <code>Block</code> class</li>
+      <li> Write the <code>serialize</code> method in the <code>Block</code> class</li>
+      <li> Write the <code>hash</code> method in the <code>Block</code> class</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Inputs</h2>
+    <div class="medhex"><code>01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code>02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="red">01</code> - Number of inputs, VarInt
+        <li class="fragment"><code class="blue">813f…d1</code> - Prev tx hash, 32 bytes, LE
+        <li class="fragment"><code class="magenta">00000000</code> - Prev tx index, 4 bytes, LE
+        <li class="fragment"><code class="yellow">6b48…8a</code> - ScriptSig, VarStr</li>
+        <li class="fragment"><code class="purple">feffffff</code> - Sequence
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 6</h2>
+    <ol start="6">
+      <li> Write the input part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxIn</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Outputs</h2>
+    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code>19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="red">02</code> - Number of outputs, VarInt
+        <li class="fragment"><code class="green">a135…00</code> - Amount in Satoshis, 8 bytes, LE
+        <li class="fragment"><code class="dark-orange">1976…ac</code> - ScriptPubKey, VarStr
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 7</h2>
+    <ol start="7">
+      <li> Write the output part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxOut</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Locktime</h2>
+    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code>
+      <p/>
+    <div class="container">
+      <div class="col">
+      <ul>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li class="fragment"><code class="dark-red">19430600</code> - Locktime, 4 bytes, LE
+      </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 8</h2>
+    <ol start="8">
+      <li> Write the locktime part of the <code>parse</code> method in the <code>Tx</code>.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <h2>Exercise 9</h2>
+  <ol start="9">
+    <li>What is the ScriptSig from the second input in this tx? What is the ScriptPubKey of the first output in this tx? What is the amount for the second output?</li>
+
+    <p>See Jupyter Notebook for the actual transaction</p>
+  </ol>
+</section>
+</div>
+</div>
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script src="plugin/math/math.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+  });
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+</script>
+</body>
+</html>
