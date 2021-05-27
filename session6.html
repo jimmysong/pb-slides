@@ -45,7 +45,7 @@
     <h1>Blocks</h1>
   </section>
   <section>
-    <h2>Session 3 Objectives</h2>
+    <h2>Session 6 Objectives</h2>
     <ul>
       <li class="fragment"><strong>Learn Coinbase Transactions</strong>
       <li class="fragment"><strong>Learn Block Structure </strong>
@@ -66,6 +66,7 @@
     </ul>
   </section>
   <section>
+    <h2>Coinbase Transaction</h2>
     <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">0000000000000000000000000000000000000000000000000000000000000000</code><code class="magenta">ffffffff</code><code class="yellow">5e03d71b07254d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code><code class="purple">ffffffff</code><code class="red">01</code><code class="green">faf20b5800000000</code><code class="dark-orange">1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code>00000000</code>
       <p/>
     <div class="container">
@@ -100,11 +101,11 @@
 <section>
   <section>
     <h2>Coinbase ScriptSig</h2>
-    <div class="bighex"><code class="purple">03d71b07</code><code class="blue">25</code><code class="red">4d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101</code><code class="yellow">fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code>
+    <div class="medhex"><code class="purple">03d71b07</code><code class="blue">25</code><code class="red">4d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101</code><code class="yellow">fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code>
       <ul>
-        <li class="fragment"><code class="purple">03d71b07</code> - Required from BIP0034, <code>03</code> is the length of the element and the rest is the height in little endian: 465879</li>
+        <li class="fragment"><code class="purple">03d71b07</code> - Required from BIP0034, <code>03</code> is the length of the element and the rest is height in little endian: <code>d71b07</code> which is 465879 in decimal</li>
         <li class="fragment"><code class="blue">25</code> - Length of extra text</li>
-        <li class="fragment"><code class="red">4d69…01</code> - Miner text <code>Mined by AntPool bj11/EB1/AD6/C Y</code></li>
+        <li class="fragment"><code class="red">4d69…01</code> - Miner text: <code>Mined by AntPool bj11/EB1/AD6/C Y</code></li>
         <li class="fragment"><code class="yellow">fabe…00</code> - Nonce space or used for merge mining.</li>
       </ul>
     </div>
@@ -114,7 +115,7 @@
     <ol start="2">
       <li>Print the Genesis Block Coinbase Transaction's ScriptSig's third item</li>
       <li>Write the <code>coinbase_height</code> function</li>
-      <li>Find the address corresponding to the ScriptPubkey: <code>1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code></li>
+      <li>Find the address corresponding to the ScriptPubkey: <br/><code class="medhex">1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code></li>
     </ol>
   </section>
 </section>
@@ -151,110 +152,156 @@
         <li class="fragment"><code class="red">8ec3…00</code> - Prev block hash, 32 bytes, LE
         <li class="fragment"><code class="blue">5b07…be</code> - Merkle Root, 32 bytes, LE</li>
         <li class="fragment"><code class="purple">1e77a759</code> - Timestamp</li>
-        <li class="fragment"><code class="green">e93c0118</code> - bits</li>
+        <li class="fragment"><code class="green">e93c0118</code> - Bits</li>
         <li class="fragment"><code class="yellow">a4ffd71d</code> - Nonce</li>
       </ul>
     </div>
   </section>
   <section>
     <h2>Exercise 5, 6, 7, 8 and 9</h2>
-    <code class="medhex">020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d</code><p/>
+    <div class="medhex"><code>020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d</code></div>
     <ol start="5">
       <li> What is the hash256 of this block? Notice anything? </li>
-      <li> Write the <code>parse</code> method in the <code>Block</code> class</li>
-      <li> Write the <code>serialize</code> method in the <code>Block</code> class</li>
-      <li> Write the <code>hash</code> method in the <code>Block</code> class</li>
+      <li> Write the <code>parse</code> method in the <code>Block</code> class.</li>
+      <li> Write the <code>serialize</code> method in the <code>Block</code> class.</li>
+      <li> Write the <code>hash</code> method in the <code>Block</code> class.</li>
     </ol>
   </section>
 </section>
 <section>
   <section>
-    <h2>Inputs</h2>
-    <div class="medhex"><code>01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code>02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
-      <p/>
-    <div class="container">
-      <div class="col">
-      <ul>
-        <li class="fragment"><code class="red">01</code> - Number of inputs, VarInt
-        <li class="fragment"><code class="blue">813f…d1</code> - Prev tx hash, 32 bytes, LE
-        <li class="fragment"><code class="magenta">00000000</code> - Prev tx index, 4 bytes, LE
-        <li class="fragment"><code class="yellow">6b48…8a</code> - ScriptSig, VarStr</li>
-        <li class="fragment"><code class="purple">feffffff</code> - Sequence
-      </ul>
-      </div>
-      <div class="col">
-      <ul>
-      </ul>
-      </div>
-    </div>
-    </div>
+    <h2>Version</h2>
+    <div class="bighex">Version: <code class="brown">02000020</code></div>
+    <ul>
+      <li class="fragment">Version is little endian, so the value is <code>0x20000002</code></li>
+      <li class="fragment">BIP9 readiness is signaled with the top 3 bits(<code>001</code>)</li>
+      <li class="fragment">BIP9 specifies bits for signaling radiness. From the right:</li>
+        <ul>
+          <li class="fragment">Bit 0 was used for BIP112 (<code>OP_CSV</code>)</li>
+          <li class="fragment">Bit 1 was used for BIP141 (Segwit)</li>
+          <li class="fragment">Bit 2 is being used for BIP341 (Taproot)</li>
+          <li class="fragment">Bit 4 was used for BIP91 (NYA)</li>
+    </ul>
   </section>
   <section>
-    <h2>Exercise 6</h2>
-    <ol start="6">
-      <li> Write the input part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxIn</code> class.</li>
+    <h3>Example of version parsing</h3>
+    <pre><code>from io import BytesIO
+from block import Block
+hex_block = '020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d'
+bin_block = bytes.fromhex(hex_block)
+stream = BytesIO(bin_block)
+b = Block.parse(stream)
+version = b.version
+print(f'BIP9: {version >> 29 == 0b001}')
+print(f'BIP112: {version >> 0 & 1 == 1}')
+print(f'BIP141: {version >> 1 & 1 == 1}')
+print(f'BIP341: {version >> 2 & 1 == 1}')
+print(f'BIP91: {version >> 4 & 1 == 1}')</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 9, 10, 11, 12 and 13</h2>
+    <ol start="9">
+      <li>Write the <code>bip9</code> method for the <code>Block</code> class</li>
+      <li>Write the <code>bip112</code> method for the <code>Block</code> class</li>
+      <li>Write the <code>bip141</code> method for the <code>Block</code> class</li>
+      <li>Write the <code>bip341</code> method for the <code>Block</code> class</li>
+      <li>Write the <code>bip91</code> method for the <code>Block</code> class</li>
     </ol>
   </section>
 </section>
 <section>
   <section>
-    <h2>Outputs</h2>
-    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code>19430600</code>
-      <p/>
-    <div class="container">
-      <div class="col">
-      <ul>
-      </ul>
-      </div>
-      <div class="col">
-      <ul>
-        <li class="fragment"><code class="red">02</code> - Number of outputs, VarInt
-        <li class="fragment"><code class="green">a135…00</code> - Amount in Satoshis, 8 bytes, LE
-        <li class="fragment"><code class="dark-orange">1976…ac</code> - ScriptPubKey, VarStr
-      </ul>
-      </div>
-    </div>
-    </div>
+    <h3 class="fragment">Timestamp</h3>
+    <ul>
+      <li class="fragment">Unix timestamp, in little-endian</li>
+    </ul>
+    <h3 class="fragment">Bits</h3>
+    <ul>
+      <li class="fragment">Target/Difficulty of mining</li>
+    </ul>
+    <h3 class="fragment">Nonce</h3>
+    <ul>
+      <li class="fragment">Space to tweak the header for proof-of-work</li>
+    </ul>
   </section>
   <section>
-    <h2>Exercise 7</h2>
-    <ol start="7">
-      <li> Write the output part of the <code>parse</code> method in the <code>Tx</code> class and the <code>parse</code> method for the <code>TxOut</code> class.</li>
-    </ol>
-  </section>
-</section>
-<section>
-  <section>
-    <h2>Locktime</h2>
-    <div class="medhex"><code>0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code>
-      <p/>
-    <div class="container">
-      <div class="col">
-      <ul>
-      </ul>
-      </div>
-      <div class="col">
-      <ul>
-        <li class="fragment"><code class="dark-red">19430600</code> - Locktime, 4 bytes, LE
-      </ul>
-      </div>
-    </div>
-    </div>
+    <h2>Proof-of-Work</h2>
   </section>
   <section>
-    <h2>Exercise 8</h2>
-    <ol start="8">
-      <li> Write the locktime part of the <code>parse</code> method in the <code>Tx</code>.</li>
-    </ol>
+    <h3>What is Proof-of-Work?</h3>
+    <ul>
+      <li class="fragment">A way to give someone the right to publish a block</li>
+      <li class="fragment">A way to distribute the control of the blockchain</li>
+      <li class="fragment">A way to secure the blockchain</li>
+      <li class="fragment">Finding a hash that's below a certain number</li>
+      <li class="fragment">Difficulty/Target/Bits gets adjusted every 2016 blocks.</li>
+    </ul>
   </section>
-</section>
-<section>
-  <h2>Exercise 9</h2>
-  <ol start="9">
-    <li>What is the ScriptSig from the second input in this tx? What is the ScriptPubKey of the first output in this tx? What is the amount for the second output?</li>
+  <section>
+    <h3>Calculating Target from Bits</h3>
+    <div class="bighex">Bits: <code class="green">e93c0118</code></div>
+    <ul>
+      <li class="fragment">The first three bytes are the coefficient $m$ in little-endian: <code>0x013ce9</code></li>
+      <li class="fragment">The last byte is the exponent $e$: <code>0x18 = 24</code></li>
+      <li class="fragment">Plug into this formula to get the target: $t = m \times 256^{e-3}$</li>
+      <li class="fragment"><div class="medhex">0x0000000000000000013ce9000000000000000000000000000000000000000000</div></li>
+      <li class="fragment">To find a hash that is below this target, $3.8 \times 10^{21}$ hashes on average have to be calculated. The fastest GPU on the market (2.5 Gh/s) would take ~50,000 years to calculate that many hashes.</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Example of Calculating Target</h3>
+    <pre><code>from helper import little_endian_to_int
+bits = bytes.fromhex('e93c0118')
+exponent = bits[-1]
+coefficient = little_endian_to_int(bits[:-1])
+target = coefficient*256**(exponent-3)
+print('{:x}'.format(target).zfill(64))  # 0000000000000000013ce9000000000000000000000000000000000000000000</code></pre>
+  </section>
+  <section>
+    <h3>Calculating Difficulty from Target</h3>
+    <div class="medhex">Target: <code class="light-blue">0000000000000000013ce9000000000000000000000000000000000000000000</code></div>
+    <ul>
+      <li class="fragment">The lowest target allowed, $l$ corresponds to the bits <code>0xffff001d</code></li>
+      <li class="fragment">The formula for difficulty, $d$ is: $d = l/t$ where $t$ is the target</li>
+      <li class="fragment">$\frac{\texttt{0x00000000ffff0000000000000000000000000000000000000000000000000000}}{\texttt{0x0000000000000000013ce9000000000000000000000000000000000000000000}} \\ = 888,171,856,257.3$</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Example of Calculating Difficulty</h3>
+    <pre><code>from helper import little_endian_to_int
 
-    <p>See Jupyter Notebook for the actual transaction</p>
-  </ol>
+bits = bytes.fromhex('e93c0118')
+exponent = bits[-1]
+coefficient = little_endian_to_int(bits[:-1])
+target = coefficient*256**(exponent-3)
+
+min_target = 0xffff*256**(0x1d-3)
+print(min_target // target)  # 888171856257</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 14 and 15</h2>
+    <ol start="14">
+      <li>Calculate the target and difficulty for these bits: <code>0xf2881718</code> </li>
+      <li>Write the <code>target</code> and <code>difficulty</code> methods for the <code>Block</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>Checking Proof-of-Work</h3>
+    <ul>
+      <li class="fragment">The Hash256 of the block header interpreted as a little-endian number must be below the target.</li>
+      <li class="fragment">This is why the Hash256 ends in a lot of zeroes.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Exercise 16 and 17</h2>
+    <ol start="16">
+      <li>Validate the proof-of-work for this block:
+      <div class="medhex"><code>04000000fbedbbf0cfdaf278c094f187f2eb987c86a199da22bbb20400000000000000007b7697b29129648fa08b4bcd13c9d5e60abb973a1efac9c8d573c71c807c56c3d6213557faa80518c3737ec1</code></div></li>
+      <li>Write the <code>check_pow</code> method for the <code>Block</code> class.</li>
+    </ol>
+  </section>
 </section>
 </div>
 </div>

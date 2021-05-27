@@ -71,6 +71,11 @@
   line-height: 0em;
   text-align: left;
 }
+.smallhex{
+  font-size: 20px;
+  word-break: break-all;
+  text-align: left;
+}
 .medhex{
   font-size: 24px;
   word-break: break-all;

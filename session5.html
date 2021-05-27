@@ -470,110 +470,69 @@ print(tx_obj.serialize().hex())
       from helper import encode_base58_checksum
       print(encode_base58_checksum(b'\x05'+bytes.fromhex('74d691da1574e6b3c192ecfb52cc8984ee7b6c56')))  # 3CLoMMyuoDQTPRD3XYZtCvgvkadrAdvdXh
   </code></pre>
-</section>
-<section>
-  <h2>Exercise 7, 8 and 9</h2>
-  <ol start="7">
-    <li>Write the <code>h160_to_p2pkh_address</code> function.</li>
-    <li>Write the <code>h160_to_p2sh_address</code> function.</li>
-    <li>Write the <code>is_p2pkh_script_pubkey</c
-                                                ode> method for the <code>TxIn</code> class.</li>
-  </ol>
-</section>
-</section>
-<section>
-  <section>
-    <h2>Checking Inputs &gt; Outputs</h2>
-    <pre><code class="fragment">
-        # Check that input> amounts = output amounts
-input_sum = 42505594
-output_sum = 32454049 + 10011545  # 42465594
-input_sum >= output_sum  # True
-fee = input_sum - output_sum  # 40000
-</code></pre>
   </section>
   <section>
-    <h2>Exercise 9 and 10</h2>
-    <ol start="9">
-      <li>How much is the fee for the transaction in Jupyter?</li>
-      <li>Write the <code>fee</code> method for the <code>Tx</code> class.</li>
+    <h2>Exercise 7, 8 and 9</h2>
+    <ol start="7">
+      <li>Write the <code>h160_to_p2pkh_address</code> function.</li>
+      <li>Write the <code>h160_to_p2sh_address</code> function.</li>
+      <li>Write the <code>is_p2pkh_script_pubkey</code>, <code>is_p2sh_script_pubkey</code> and <code>address</code> methods for the <code>Script</code> class.</li>
     </ol>
   </section>
 </section>
 <section>
   <section>
-    <h2>Checking that the ScriptSig is Valid</h2>
+    <h2>Validating P2SH</h2>
     <ul>
-      <li class="fragment">To do this generally, the Script engine needs to be run on the ScriptSig and ScriptPubKey.</li>
-      <li class="fragment">In practice, the thing you need to check is the signature.</li>
-      <li class="fragment">Public Key and Signature are usually in the ScriptSig field.</li>
-      <li class="fragment">Hard part is figuring out $z$, which is the hash of what was signed.</li>
+      <li class="fragment">P2SH does <em>not</em> generate $z$ the same way as P2PKH.</li>
+      <li class="fragment">This was part of the BIP0016 specification.</li>
+      <li class="fragment">The main difference is that instead of the previous ScriptPubKey, RedeemScript is used instead.</li>
     </ul>
   </section>
   <section>
-    <h2>Getting $z$ - Step 1</h2>
+    <h3>Getting $z$ - Step 1</h3>
     Empty ScriptSigs from every input
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
-    becomes
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">00</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">db00483045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
+    becomes<br/>
+    <code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">00</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code></div>
   </section>
   <section>
-    <h2>Getting $z$ - Step 2</h2>
-    Replace the ScriptSig of the input that was signed with the previous transaction ScriptPubKey
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">00</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
-    becomes
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    <h3>Getting $z$ - Step 2</h3>
+    Replace the ScriptSig of the input that was signed with the RedeemScript
+    <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">00</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
+    becomes<br/>
+      <code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code></div>
   </section>
   <section>
-    <h2>Getting $z$ - Step 3</h2>
+    <h3>Getting $z$ - Step 3</h3>
     Append a 4-byte hash type. In practice, this is almost always <code>01000000</code>
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
-    becomes
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code><code class="light-blue">01000000</code></div>
+    <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
+    becomes<br/>
+    <code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><code class="light-blue">01000000</code></div>
   </section>
   <section>
-    <h2>Getting $z$ - Step 4</h2>
+    <h3>Getting $z$ - Step 4</h3>
     Perform a hash256 and interpret in Big-Endian to get $z$
-    <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code><code class="light-blue">01000000</code></div>
-    <pre><code>
-from helper import hash256
+    <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><code class="light-blue">01000000</code></div>
+    <pre><code>from helper import hash256
 
-modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
+modified_tx = bytes.fromhex('0100000001868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d87221a000000475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152aeffffffff04d3b11400000000001976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac7f400900000000001976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac722c0c00000000001976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788acdc4ace020000000017a91474d691da1574e6b3c192ecfb52cc8984ee7b6c56870000000001000000')
 h = hash256(modified_tx)
 z = int.from_bytes(h, 'big')
-print(hex(z))  # 0x27e0c5994dec7824e56dec6b2fcb342eb7cdb0d0957c2fce9882f715e85d81a6
-    </code></pre>
+print(hex(z))  # 0xe71bfa115715d6fd33796948126f40a8cdd39f187e4afb03896795189fe1423c</code></pre>
   </section>
   <section>
-    <h2>Exercise 11</h2>
-    <ol start="11">
-      <li>Write the <code>sig_hash</code> method for the <code>Tx</code> class.</li>
-    </ol>
-  </section>
-</section>
-<section>
-  <section>
-    <h2>Using $z$</h2>
-    Check the signature using the PubKey and $z$
-    <pre><code>
-from io import BytesIO
-from helper import hash256
-from tx import Tx
-modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
-h256 = hash256(modified_tx)
-z = int.from_bytes(h256, 'big')
-stream = BytesIO(bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000'))
-transaction = Tx.parse(stream)
-tx_in = transaction.tx_ins[0]
-combined_script = tx_in.script_sig + tx_in.script_pubkey()
-print(combined_script.evaluate(z))  # True
-    </code></pre>
+    <h3>Get the SEC PubKey and DER Signature from the ScriptSig</h3>
+    <div class="smallhex"><code>0100000001868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d87221a000000<code class="yellow">db0048<em>3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</em>483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221<em>022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70</em>2103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>ffffffff04d3b11400000000001976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac7f400900000000001976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac722c0c00000000001976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788acdc4ace020000000017a91474d691da1574e6b3c192ecfb52cc8984ee7b6c568700000000</code></div>
+    <pre><code>from ecc import S256, Signature
+point = S256Point.parse(bytes.fromhex('022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70'))
+sig = Signature.parse(bytes.fromhex('3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a89937'))
+print(point.verify(z, sig))  # True</code></pre>
   </section>
   <section>
-    <h2>Exercise 12</h2>
-    <ol start="12">
-      <li>Validate the signature for the first input of this transaction</li>
-      <code class="hex">01000000012f5ab4d2666744a44864a63162060c2ae36ab0a2375b1c2b6b43077ed5dcbed6000000006a473044022034177d53fcb8e8cba62432c5f6cc3d11c16df1db0bce20b874cfc61128b529e1022040c2681a2845f5eb0c46adb89585604f7bf8397b82db3517afb63f8e3d609c990121035e8b10b675477614809f3dde7fd0e33fb898af6d86f51a65a54c838fddd417a5feffffff02c5872e00000000001976a91441b835c78fb1406305727d8925ff315d90f9bbc588acae2e1700000000001976a914c300e84d277c6c7bcf17190ebc4e7744609f8b0c88ac31470600</code>
+    <h2>Exercise 10</h2>
+    <ol start="10">
+      <li>Validate the second signature with the second key.</li>
     </ol>
   </section>
 </section>
