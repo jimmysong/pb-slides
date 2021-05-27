@@ -1,0 +1,481 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Session 7 - SPV</title>
+
+    <link rel="stylesheet" href="dist/custom.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/solarized.css">
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+  </head>
+  <body>
+<div class="reveal">
+  <div class="slides">
+<section>
+  <h2> Class Schedule </h2>
+  <div class="container">
+    <div class="col">
+      <h3>Day 1</h3>
+      <ul>
+        <li>Foundational Math</li>
+        <li>Elliptic Curve Cryptography</li>
+        <li>Transaction Parsing</li>
+        <li>Script</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Day 2</h3>
+      <ul>
+        <li>Transaction Construction</li>
+        <li>Blocks</li>
+        <li class="current">Simplified Payment Verification</li>
+        <li>Networking and Segwit</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section>
+  <section>
+    <h1>Simplified Payment Verification</h1>
+  </section>
+  <section>
+    <h2>Session 7 Objectives</h2>
+    <ul>
+      <li class="fragment"><strong>Learn Node Communication</strong>
+      <li class="fragment"><strong>Learn Network Messaging </strong>
+      <li class="fragment"><strong>Learn Merkle Blocks </strong>
+      <li class="fragment"><strong>Learn Merkle Trees</strong>
+    </ul>
+  </section>
+  <section>
+    <h2>Node Communication</h2>
+  </section>
+  <section>
+    <h2>How do nodes on the network communicate?</h2>
+    <ul>
+      <li class="fragment">Bitcoin network is a broadcast network</li>
+      <li class="fragment">Nodes initially connect to other known nodes (hard coded into Bitcoin Core)</li>
+      <li class="fragment">Once connected, nodes can discover other nodes and connect</li>
+      <li class="fragment"><em>Not</em> concensus critical!</li>
+    </ul>
+  </section>
+  <section>
+    <h3 class="fragment">Network Message Structure</h3>
+    <ul>
+      <li class="fragment">Magic - Packet identifier, always <code>f9beb4d9</code></li>
+      <li class="fragment">Command - Message type, always 12 bytes, 0-padded and human readable. e.g. <code>version</code></li>
+      <li class="fragment">Length - Length of payload, 4 bytes, little-endian</li>
+      <li class="fragment">Checksum - First 4 bytes of the Hash256 of the payload</li>
+      <li class="fragment">Payload - Actual message</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Example Messages</h3>
+    <div class="container">
+      <div class="col">
+      <ul>
+        <li><code>version</code></li>
+        <li><code>verack</code></li>
+        <li><code>getaddr</code></li>
+        <li><code>addr</code></li>
+        <li><code>inv</code></li>
+        <li><code>getdata</code></li>
+        <li><code>notfound</code></li>
+      </ul>
+      </div>
+      <div class="col">
+      <ul>
+        <li><code>tx</code></li>
+        <li><code>block</code></li>
+        <li><code>getheaders</code></li>
+        <li><code>headers</code></li>
+        <li><code>merkleblock</code></li>
+        <li><code>ping</code></li>
+        <li><code>pong</code></li>
+      </ul>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Parsing Network Messages</h2>
+    <div class="medhex"><code class="purple">f9beb4d9</code><code class="blue">76657273696f6e0000000000</code><code class="green">65000000</code><code class="red">5f1a69d2</code><code class="yellow">721101000100000000000000bc8f5e5400000000010000000000000000000000000000000000ffffc61b6409208d010000000000000000000000000000000000ffffcb0071c0208d128035cbc97953f80f2f5361746f7368693a302e392e332fcf05050001</code>
+      <ul>
+        <li class="fragment"><code class="purple">f9beb4d9</code> - Network Magic</li>
+        <li class="fragment"><code class="blue">7665…00</code> - Command, or payload type.</li>
+        <li class="fragment"><code class="green">65000000</code> - Payload length in little endian.</li>
+        <li class="fragment"><code class="red">5f1a69d2</code> - Checksum, the first 4 bytes of the Hash256 of the payload.</li>
+        <li class="fragment"><code class="yellow">7211…01</code> - Payload</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Parsing <code>version</code></h2>
+    <div class="medhex"><code class="brown">7f110100</code><code class="green">0000000000000000</code><code class="purple">ad17835b00000000</code><code class="green">0000000000000000</code><code class="red">00000000000000000000ffff00000000</code><code class="blue">8d20</code><code class="green">0000000000000000</code><code class="red">00000000000000000000ffff00000000</code><code class="blue">8d20</code><code class="magenta">f6a8d7a440ec27a1</code><code class="yellow">1b2f70726f6772616d6d696e67626c6f636b636861696e3a302e312f</code><code class="cyan">00000000</code><code class="dark-red">01</code><br/>
+      <ul>
+        <li class="fragment"><code class="brown">7f110100</code> - Protocol Version</li>
+        <li class="fragment"><code class="green">0000…00</code> - Network Services</li>
+        <li class="fragment"><code class="purple">ad17…00</code> - Timestamp</li>
+        <li class="fragment"><code class="red">0000…00</code> - Network Address</li>
+        <li class="fragment"><code class="blue">8d20</code> - Network Port</li>
+        <li class="fragment"><code class="magenta">f6a8…a1</code> - Network Port</li>
+        <li class="fragment"><code class="yellow">1b2f…2f</code> - Useragent</li>
+        <li class="fragment"><code class="cyan">0000…00</code> - Block Height</li>
+        <li class="fragment"><code class="dark-red">01</code> - Relay Flag</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 1, 2 and 3</h2>
+    <ol start="1">
+      <li>Parse this message: <div class="medhex">f9beb4d976657261636b000000000000000000005df6e0e2</div></li>
+      <li>Write the <code>parse</code> method for the <code>NetworkEnvelope</code> class.</li>
+      <li>Write the <code>serialize</code> method for the <code>NetworkEnvelope</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Parsing <code>getheaders</code></h2>
+    <div class="medhex"><code class="brown">7f110100</code><code class="red">01</code><code class="yellow">a35bd0ca2f4a88c4eda6d213e2378a5758dfcd6af43712000000000000000000</code><code class="cyan">0000000000000000000000000000000000000000000000000000000000000000</code><br/>
+      <ul>
+        <li class="fragment"><code class="brown">7f110100</code> - Protocol Version, 4-bytes, little endian</li>
+        <li class="fragment"><code class="red">01</code> - Number of hashes, varint</li>
+        <li class="fragment"><code class="yellow">a35b…00</code> - Starting block, little endian</li>
+        <li class="fragment"><code class="cyan">0000…00</code> - Ending block, little endian</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Parsing <code>headers</code></h2>
+    <div class="medhex"><code class="red">02</code><code class="yellow">00000020df3b053dc46f162a9b00c7f0d5124e2676d47bbe7c5d0793a500000000000000ef445fef2ed495c275892206ca533e7411907971013ab83e3b47bd0d692d14d4dc7c835b67d8001ac157e67</code><code class="green">00</code><code class="yellow">00000002030eb2540c41025690160a1014c577061596e32e426b712c7ca00000000000000768b89f07044e6130ead292a3f51951adbd2202df447d98789339937fd006bd44880835b67d8001ade092046</code><code class="green">00</code><br/>
+      <ul>
+        <li class="fragment"><code class="red">02</code> - Number of block headers</li>
+        <li class="fragment"><code class="yellow">0000…67</code> - Block Header</li>
+        <li class="fragment"><code class="green">00</code> - Number of transactions, always 0</li>
+      </ul>
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 4 and 5</h2>
+    <ol start="4">
+      <li>Write the <code>serialize</code> method for the <code>GetHeadersMessage</code> class.</li>
+      <li>Write the <code>parse</code> method for the <code>HeadersMessage</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Network Handshake</h2>
+  </section>
+  <section>
+    <table>
+      <tr>
+        <th class="brown">Node A</th>
+        <th class="brown">Node B</th>
+      </tr>
+      <tr class="fragment">
+        <td>Wants to connect to B</td>
+        <td>Open to new connections</td>
+      </tr>
+      <tr>
+        <td class="fragment">Sends <code>version</code></td>
+        <td class="fragment">
+          Receives <code>version</code><br/>
+          Sends <code>verack</code><br/>
+          Sends <code>version</code><br/>
+        </td>
+      </tr>
+      <tr>
+        <td class="fragment">
+          Receives <code>verack</code><br/>
+          Receives <code>version</code>
+        </td>
+        <td class="fragment">
+          ...<br/>
+          (Sends <code>inv</code>)
+        </td>
+      </tr>
+    </table>
+  </section>
+  <section>
+    <h3>Example of Handshake</h3>
+    <pre><code data-line-numbers="1|2|3|4|5">from network import SimpleNode, VersionMessage, VerAckMessage
+node = SimpleNode('testnet.programmingbitcoin.com', testnet=True)
+version = VersionMessage()
+node.send(version)
+print(node.wait_for(VerAckMessage).command)</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 6</h2>
+    <ol start="6">
+      <li> Write the <code>handshake</code> method in the <code>SimpleNode</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Example of Downloading Block Headers</h2>
+    <pre><code data-line-numbers="1-3|4-5|6|7-9|10|11-14|15-16|17-18">from network import GetHeadersMessage, HeadersMessage, SimpleNode
+node = SimpleNode('mainnet.programmingbitcoin.com', testnet=False)
+node.handshake()
+last_block_hash = GENESIS_BLOCK_HASH
+current_height = 1
+for _ in range(20):
+    getheaders = GetHeadersMessage(start_block=last_block_hash)
+    node.send(getheaders)
+    headers = node.wait_for(HeadersMessage)
+    for header in headers.headers:
+        if not header.check_pow():
+            raise RuntimeError('bad proof of work at block {}'.format(count))
+        if last_block_hash != GENESIS_BLOCK_HASH and header.prev_block != last_block_hash:
+            raise RuntimeError('discontinuous block at {}'.format(count))
+        if current_height % 2016 == 0:
+            print(header.id())
+        current_height += 1
+        last_block_hash = header.hash()</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 7</h2>
+    <ol start="7">
+      <li> Download the first 40000 blocks for testnet and validate them.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Merkle Trees</h2>
+  </section>
+  <section>
+    <h2>What is a Merkle Tree?</h2>
+    <ul>
+      <li class="fragment">An efficient way to combine a lot of things into a single hash.</li>
+      <li class="fragment">Computer Science structure useful for proving something belongs in a set without knowing the whole set.</li>
+      <li class="fragment">Structured as a full binary tree.</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Computing a Merkle Tree</h3>
+    <ol>
+      <li class="fragment">Given a list of items, hash them all using a hash function (bitcoin uses Hash256)</li>
+      <li class="fragment">Pair them and if there’s an odd number, duplicate the last one so it has a pair.</li>
+      <li class="fragment">Hash the pairs together to get the parents.</li>
+      <li class="fragment">You should have half the number of hashes as before.</li>
+      <li class="fragment">Repeat 2-4 until you only have a single hash.</li>
+    </ol>
+  </section>
+  <section>
+    <h3>Merkle Tree</h3>
+    <img src="assets/s7-merkle1.PNG">
+  </section>
+  <section>
+    <h3>Calculating the Merkle Parent</h3>
+    <ul>
+      <li class="fragment">Take each hash and concatenate them</li>
+      <li class="fragment">Hash the result to get the parent</li>
+    </ul>
+    <pre><code class="fragment">from helper import hash256
+tx_hash0 = bytes.fromhex('c117ea8ec828342f4dfb0ad6bd140e03a50720ece40169ee38bdc15d9eb64cf5')
+tx_hash1 = bytes.fromhex('c131474164b412e3406696da1ee20ab0fc9bf41c8f05fa8ceea7a08d672d7cc5')
+parent = hash256(tx_hash0+tx_hash1)
+print(parent.hex())</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 8 and 9</h2>
+    <ol start="8">
+      <li>Calculate the Merkle parent for these two hashes:
+        <div class="smallhex"><code>f391da6ecfeed1814efae39e7fcb3838ae0b02c02ae7d0a5848a66947c0727b0<br/>
+3d238a92a94532b946c90e19c49351c763696cff3db400485b813aecb8a13181</code></div>
+      </li>
+      <li>Write the <code>merkle_parent</code> function.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>Calculating the Merkle Parent Level</h3>
+    <ul>
+      <li class="fragment">If the number of elements is odd, duplicate the last element and append to the end of the list</li>
+      <li class="fragment">Pair up the hashes</li>
+      <li class="fragment">Calculate the Merkle Parent of each pair</li>
+      <li class="fragment">The list of parents is the Merkle Parent Level</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Example of Calculating Merkle Parent Level</h3>
+    <pre><code class="fragment" data-line-numbers="1-7|8-9|11|12-14">from helper import merkle_parent
+hex_hashes = [
+    'c117ea8ec828342f4dfb0ad6bd140e03a50720ece40169ee38bdc15d9eb64cf5',
+...
+    '10092f2633be5f3ce349bf9ddbde36caa3dd10dfa0ec8106bce23acbff637dae',
+]
+hashes = [bytes.fromhex(x) for x in hex_hashes]
+if len(hashes) % 2 == 1:
+    hashes.append(hashes[-1])
+parent_level = []
+for i in range(0, len(hex_hashes), 2):
+    parent = merkle_parent(hashes[i], hashes[i+1])
+    print(parent.hex())
+    parent_level.append(parent)</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 10 and 11</h2>
+    <ol start="10">
+      <li>Calculate the Merkle parent level for these hashes:
+        <div class="smallhex"><code>
+            8b30c5ba100f6f2e5ad1e2a742e5020491240f8eb514fe97c713c31718ad7ecd<br/>
+            7f4e6f9e224e20fda0ae4c44114237f97cd35aca38d83081c9bfd41feb907800<br/>
+            ade48f2bbb57318cc79f3a8678febaa827599c509dce5940602e54c7733332e7<br/>
+            68b3e2ab8182dfd646f13fdf01c335cf32476482d963f5cd94e934e6b3401069<br/>
+            43e7274e77fbe8e5a42a8fb58f7decdb04d521f319f332d88e6b06f8e6c09e27<br/>
+            f391da6ecfeed1814efae39e7fcb3838ae0b02c02ae7d0a5848a66947c0727b0</code></div>
+      </li>
+      <li>Write the <code>merkle_parent_level</code> function.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>Calculating the Merkle Root</h3>
+    <ol>
+      <li class="fragment">Start with some list of hashes</li>
+      <li class="fragment">If there is exactly one hash, we're done</li>
+      <li class="fragment">Calculate the Merkle Parent level from the current list of hashes</li>
+      <li class="fragment">Go to 2</li>
+    </ol>
+  </section>
+  <section>
+    <h3>Example of Calculating Merkle Root</h3>
+    <pre><code class="fragment" data-line-numbers="1-6|7|8-9|10">from helper import merkle_parent_level
+hex_hashes = [
+    'c117ea8ec828342f4dfb0ad6bd140e03a50720ece40169ee38bdc15d9eb64cf5',
+...
+    'b13a750047bc0bdceb2473e5fe488c2596d7a7124b4e716fdd29b046ef99bbf0',
+]
+current_level = [bytes.fromhex(x) for x in hex_hashes]
+while len(current_level) > 1:
+    current_level = merkle_parent_level(current_level)
+print(current_level[0].hex())</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 12 and 13</h2>
+    <ol start="12">
+      <li>Calculate the Merkle root for these hashes:
+        <div class="smallhex"><code>42f6f52f17620653dcc909e58bb352e0bd4bd1381e2955d19c00959a22122b2e<br/>
+94c3af34b9667bf787e1c6a0a009201589755d01d02fe2877cc69b929d2418d4<br/>
+959428d7c48113cb9149d0566bde3d46e98cf028053c522b8fa8f735241aa953<br/>
+a9f27b99d5d108dede755710d4a1ffa2c74af70b4ca71726fa57d68454e609a2<br/>
+62af110031e29de1efcad103b3ad4bec7bdcf6cb9c9f4afdd586981795516577<br/>
+766900590ece194667e9da2984018057512887110bf54fe0aa800157aec796ba<br/>
+e8270fb475763bc8d855cfe45ed98060988c1bdcad2ffc8364f783c98999a208<br/>
+921b8cfd3e14bf41f028f0a3aa88c813d5039a2b1bceb12208535b0b43a5d09e<br/>
+15535864799652347cec66cba473f6d8291541238e58b2e03b046bc53cfe1321<br/>
+1c8af7c502971e67096456eac9cd5407aacf62190fc54188995666a30faf99f0<br/>
+3311f8acc57e8a3e9b68e2945fb4f53c07b0fa4668a7e5cda6255c21558c774d
+</code></div>
+      </li>
+      <li>Write the <code>merkle_root</code> function.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h3>Calculating the Merkle Root in Blocks</h3>
+    <ul>
+      <li class="fragment">All transaction hashes are put in little-endian order</li>
+      <li class="fragment">Calculate the Merkle Root as normal from these hashes</li>
+      <li class="fragment">The Merkle Root must be interpreted in little-endian order</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Example of Calculating Merkle Root of a block</h3>
+    <pre><code class="fragment" data-line-numbers="1-10|11|12">from helper import merkle_root
+tx_hex_hashes = [
+    '42f6f52f17620653dcc909e58bb352e0bd4bd1381e2955d19c00959a22122b2e',
+    '94c3af34b9667bf787e1c6a0a009201589755d01d02fe2877cc69b929d2418d4',
+    '959428d7c48113cb9149d0566bde3d46e98cf028053c522b8fa8f735241aa953',
+    'a9f27b99d5d108dede755710d4a1ffa2c74af70b4ca71726fa57d68454e609a2',
+    '62af110031e29de1efcad103b3ad4bec7bdcf6cb9c9f4afdd586981795516577',
+    '766900590ece194667e9da2984018057512887110bf54fe0aa800157aec796ba',
+    'e8270fb475763bc8d855cfe45ed98060988c1bdcad2ffc8364f783c98999a208',
+]
+current_level = [bytes.fromhex(x)[::-1] for x in tx_hex_hashes]
+print(merkle_root(current_level)[::-1].hex())</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 14 and 15</h2>
+    <ol start="14">
+      <li>Validate the merkle root for this block on Testnet:
+        <div class="smallhex"><code>0000000000000451fa80fcdb243b84c35eaae215a85a8faa880559e8239e6f20</code></div>
+      </li>
+      <li>Write the <code>validate_merkle_root</code> method in the <code>Block</code> class.</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <h2>Exercise 16</h2>
+  <ol start="16">
+    <li>Validate the merkle root for this block on Testnet via network protocol:
+      <div class="smallhex"><code>0000000000044b01a9440b34f582fe171c7b8642fedd0ebfccf8fdf6a1810900</code></div>
+    </li>
+  </ol>
+</section>
+<section>
+  <section>
+    <h2>Merkle Blocks</h2>
+  </section>
+  <section>
+    <h2>Why is a Merkle Tree useful?</h2>
+    <ul>
+      <li class="fragment">You can prove a hash is in the tree without knowing the whole tree!</li>
+      <li class="fragment">Very useful for thin-clients using something called Simplified Payment Verification (SPV)</li>
+      <li class="fragment">SPV is very useful where you don’t have room for the entire blockchain (300+ GB and counting)</li>
+    </ul>
+  </section>
+  <section>
+    <h2>What is a Merkle Block?</h2>
+    <ul>
+      <li class="fragment">Block data that proves certain transactions are in the block (proof of inclusion)</li>
+      <li class="fragment">Depth First Ordering of hashes</li>
+      <li class="fragment">Defined in BIP37</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Merkle Block Processing</h3>
+    <img src="assets/s7-merkle2.PNG">
+  </section>
+  <section>
+    <h2>Future of SPV</h2>
+    <ul>
+      <li class="fragment">BIP37 deprecated on Core nodes.</li>
+      <li class="fragment">BIP158 Compact Block Filters (Neutrino) is the replacement.</li>
+    </ul>
+  </section>
+</section>
+</div>
+</div>
+<script src="dist/reveal.js"></script>
+<script src="plugin/notes/notes.js"></script>
+<script src="plugin/markdown/markdown.js"></script>
+<script src="plugin/highlight/highlight.js"></script>
+<script src="plugin/math/math.js"></script>
+<script>
+  // More info about initialization & config:
+  // - https://revealjs.com/initialization/
+  // - https://revealjs.com/config/
+  Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes, RevealMath ]
+  });
+  MathJax.Hub.Config({
+      jax: ["input/TeX","output/HTML-CSS"],
+      displayAlign: "left"
+  });
+</script>
+</body>
+</html>
