@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="dist/theme/solarized.css">
 
     <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   </head>
   <body>
 <div class="reveal">
@@ -101,7 +101,7 @@
 <section>
   <section>
     <h2>Coinbase ScriptSig</h2>
-    <div class="medhex"><code class="purple">03d71b07</code><code class="blue">25</code><code class="red">4d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101</code><code class="yellow">fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code>
+    <div class="largehex"><code class="purple">03d71b07</code><code class="blue">25</code><code class="red">4d696e656420627920416e74506f6f6c20626a31312f4542312f4144362f43205914293101</code><code class="yellow">fabe6d6d678e2c8c34afc36896e7d9402824ed38e856676ee94bfdb0c6c4bcd8b2e5666a0400000000000000c7270000a5e00e00</code>
       <ul>
         <li class="fragment"><code class="purple">03d71b07</code> - Required from BIP0034, <code>03</code> is the length of the element and the rest is height in little endian: <code>d71b07</code> which is 465879 in decimal</li>
         <li class="fragment"><code class="blue">25</code> - Length of extra text</li>
@@ -145,7 +145,7 @@
   </section>
   <section>
     <h2>Block Header Elements</h2>
-    <div class="medhex"><code class="brown">02000020</code><code class="red">8ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd000000000000000000</code><code class="blue">5b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be</code><code class="purple">1e77a759</code><code class="green">e93c0118</code><code class="dark-red">a4ffd71d</code>
+    <div class="largehex"><code class="brown">02000020</code><code class="red">8ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd000000000000000000</code><code class="blue">5b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be</code><code class="purple">1e77a759</code><code class="green">e93c0118</code><code class="dark-red">a4ffd71d</code>
       <p/>
       <ul>
         <li class="fragment"><code class="brown">02000020</code> - Version, 4 bytes, Little Endian
@@ -159,9 +159,9 @@
   </section>
   <section>
     <h2>Exercise 5, 6, 7, 8 and 9</h2>
-    <div class="medhex"><code>020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d</code></div>
     <ol start="5">
-      <li> What is the hash256 of this block? Notice anything? </li>
+      <li> What is the hash256 of this block? Notice anything?     <div class="largehex"><code>020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d</code></div>
+</li>
       <li> Write the <code>parse</code> method in the <code>Block</code> class.</li>
       <li> Write the <code>serialize</code> method in the <code>Block</code> class.</li>
       <li> Write the <code>hash</code> method in the <code>Block</code> class.</li>
@@ -185,7 +185,7 @@
   </section>
   <section>
     <h3>Example of version parsing</h3>
-    <pre><code>from io import BytesIO
+    <pre class="python"><code>from io import BytesIO
 from block import Block
 hex_block = '020000208ec39428b17323fa0ddec8e887b4a7c53b8c0a0a220cfd0000000000000000005b0750fce0a889502d40508d39576821155e9c9e3f5c3157f961db38fd8b25be1e77a759e93c0118a4ffd71d'
 bin_block = bytes.fromhex(hex_block)
@@ -211,18 +211,22 @@ print(f'BIP91: {version >> 4 & 1 == 1}')</code></pre>
 </section>
 <section>
   <section>
+    <div>
     <h3 class="fragment">Timestamp</h3>
     <ul>
       <li class="fragment">Unix timestamp, in little-endian</li>
     </ul>
+    <p/>
     <h3 class="fragment">Bits</h3>
     <ul>
       <li class="fragment">Target/Difficulty of mining</li>
     </ul>
+    <p/>
     <h3 class="fragment">Nonce</h3>
     <ul>
       <li class="fragment">Space to tweak the header for proof-of-work</li>
     </ul>
+    </div>
   </section>
   <section>
     <h2>Proof-of-Work</h2>
@@ -250,7 +254,7 @@ print(f'BIP91: {version >> 4 & 1 == 1}')</code></pre>
   </section>
   <section>
     <h3>Example of Calculating Target</h3>
-    <pre><code>from helper import little_endian_to_int
+    <pre class="python"><code>from helper import little_endian_to_int
 bits = bytes.fromhex('e93c0118')
 exponent = bits[-1]
 coefficient = little_endian_to_int(bits[:-1])
@@ -268,7 +272,7 @@ print('{:x}'.format(target).zfill(64))  # 0000000000000000013ce90000000000000000
   </section>
   <section>
     <h3>Example of Calculating Difficulty</h3>
-    <pre><code>from helper import little_endian_to_int
+    <pre class="python"><code>from helper import little_endian_to_int
 
 bits = bytes.fromhex('e93c0118')
 exponent = bits[-1]

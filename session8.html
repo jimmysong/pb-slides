@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="dist/theme/solarized.css">
 
     <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   </head>
   <body>
 <div class="reveal">
@@ -80,7 +80,7 @@
   </section>
   <section>
     <h3>Example of a Single Item</h3>
-    <pre><code>from helper import hash256
+    <pre class="python"><code>from helper import hash256
 
 bit_field_size = 10
 bit_field = [0] * bit_field_size
@@ -96,7 +96,7 @@ print(bit_field)  # [0, 0, 0, 0, 0, 0, 0, 0, 0, 1] </code></pre>
   </section>
   <section>
     <h3>Example of Multiple Items</h3>
-    <pre><code>from helper import hash256
+    <pre class="python"><code>from helper import hash256
 
 bit_field_size = 10
 bit_field = [0] * bit_field_size
@@ -115,7 +115,7 @@ print(bit_field)  # [0, 0, 1, 0, 0, 0, 0, 0, 0, 1]</code></pre>
   </section>
   <section>
     <h3>Example of Multiple Items with Multiple Hashes</h3>
-    <pre><code>from helper import hash160, hash256
+    <pre class="python"><code>from helper import hash160, hash256
 
 bit_field_size = 10
 bit_field = [0] * bit_field_size
@@ -146,7 +146,7 @@ print(bit_field)  # [1, 1, 1, 0, 0, 0, 0, 0, 0, 1]</code></pre>
   </section>
   <section>
     <h3>Example of a Bitcoin Bloom Filter</h3>
-    <pre><code>from helper import murmur3
+    <pre class="python"><code>from helper import murmur3
 from bloomfilter import BIP37_CONSTANT
 field_size = 2
 num_functions = 2
@@ -232,7 +232,7 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
   </section>
   <section>
     <h3>Example of MerkleBlock Processing</h3>
-    <pre><code data-line-numbers="1|2-7|8|9|10-12|13-14|15-16">def parse(cls, s):
+    <pre class="python"><code data-line-numbers="1|2-7|8|9|10-12|13-14|15-16">def parse(cls, s):
     version = little_endian_to_int(s.read(4))
     prev_block = s.read(32)[::-1]
     merkle_root = s.read(32)[::-1]
@@ -740,9 +740,9 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
   </section>
   <section>
     <h3>Witness Script</h3>
-    <div class="medhex"><code class="red">52</code><code class="yellow">21026ccfb8061f235cc110697c0bfb3afb99d82c886672f6b9b5393b25a434c0cbf3</code><code class="dark-orange">2103befa190c0c22e2f53720b1be9476dcf11917da4665c44c9c71c3a2d28a933c35</code><code class="cyan">2102be46dc245f58085743b1cc37c82f0d63a960efa43b5336534275fc469b49f4ac</code><code class="red">53</code><code class="brown">ae</code>
+    <div class="medhex"><code class="red">52</code><code class="yellow">21026ccfb8061f235cc110697c0bfb3afb99d82c886672f6b9b5393b25a434c0cbf3</code><code class="dark-orange">2103befa190c0c22e2f53720b1be9476dcf11917da4665c44c9c71c3a2d28a933c35</code><code class="cyan">2102be46dc245f58085743b1cc37c82f0d63a960efa43b5336534275fc469b49f4ac</code><code class="red">53</code><code class="brown">ae</code></div>
       <div class="container">
-        <div class="col">
+        <div class="col medhex">
           <ul>
             <li class="fragment"><code class="red">52</code> - <code>OP_2</code></li>
             <li class="fragment"><code class="yellow">2102…f3</code> - PubKey 1</li>
@@ -775,7 +775,6 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
           </div>
         </div>
       </div>
-    </div>
   </section>
   <section>
     <div class="videocontainer">
@@ -968,9 +967,9 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
   </section>
   <section>
     <h3>Witness Script</h3>
-    <div class="medhex"><code class="red">52</code><code class="yellow">21026ccfb8061f235cc110697c0bfb3afb99d82c886672f6b9b5393b25a434c0cbf3</code><code class="dark-orange">2103befa190c0c22e2f53720b1be9476dcf11917da4665c44c9c71c3a2d28a933c35</code><code class="cyan">2102be46dc245f58085743b1cc37c82f0d63a960efa43b5336534275fc469b49f4ac</code><code class="red">53</code><code class="brown">ae</code>
+    <div class="medhex"><code class="red">52</code><code class="yellow">21026ccfb8061f235cc110697c0bfb3afb99d82c886672f6b9b5393b25a434c0cbf3</code><code class="dark-orange">2103befa190c0c22e2f53720b1be9476dcf11917da4665c44c9c71c3a2d28a933c35</code><code class="cyan">2102be46dc245f58085743b1cc37c82f0d63a960efa43b5336534275fc469b49f4ac</code><code class="red">53</code><code class="brown">ae</code></div>
       <div class="container">
-        <div class="col">
+        <div class="col medhex">
           <ul>
             <li class="fragment"><code class="red">52</code> - <code>OP_2</code></li>
             <li class="fragment"><code class="yellow">2102…f3</code> - PubKey 1</li>
@@ -1003,7 +1002,6 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
           </div>
         </div>
       </div>
-    </div>
   </section>
   <section>
     <div class="videocontainer">

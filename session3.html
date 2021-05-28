@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="dist/theme/solarized.css">
 
     <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   </head>
   <body>
 <div class="reveal">
@@ -52,6 +52,8 @@
       <li class="fragment"><strong>Learn Transaction Parsing</strong>
     </ul>
   </section>
+</section>
+<section>
   <section>
     <h2>Elliptic Curves Digital Signature Algorithm (ECDSA) </h2>
   </section>
@@ -88,19 +90,15 @@
   </section>
   <section>
     <h2>Signing Example</h2>
-    <pre><code data-line-numbers="2-5|7|8|9|10|11|12">
-        from random import randint
-
-        from ecc import G, N
-        from helper import hash256
-
-        secret = 1800555555518005555555
-        z = int.from_bytes(hash256(b'hello world'), 'big')
-        k = randint(0, 2**256)
-        r = (k*G).x.num
-        s = (z+r*secret) * pow(k, -1, N) % N
-        print(hex(z), hex(r), hex(s))
-    </code></pre>
+    <pre class="python"><code data-line-numbers="1-3|4|5|6|7|8|9">from random import randint
+from ecc import G, N
+from helper import hash256
+secret = 1800555555518005555555
+z = int.from_bytes(hash256(b'hello world'), 'big')
+k = randint(0, 2**256)
+r = (k*G).x.num
+s = (z+r*secret) * pow(k, -1, N) % N
+print(hex(z), hex(r), hex(s))</code></pre>
   </section>
   <section>
     <h2>Verification Algorithm</h2>
@@ -116,32 +114,29 @@
   </section>
   <section>
     <h2>Verification Example</h2>
-    <pre><code data-line-numbers="2|4-7|8-9|10">
-        from ecc import G, N, S256Point
-
-        z = 0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423
-        r = 0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6
-        s = 0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec
-        point = S256Point(0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574, 0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4)
-        u = z * pow(s, -1, N) % N
-        v = r * pow(s, -1, N) % N
-        print((u*G + v*point).x.num == r)  # True
-    </code></pre>
+    <pre class="python"><code data-line-numbers="1|2-5|6-7|8">from ecc import G, N, S256Point
+z = 0xbc62d4b80d9e36da29c16c5d4d9f11731f36052c72401a76c23c0fb5a9b74423
+r = 0x37206a0610995c58074999cb9767b87af4c4978db68c06e8e6e81d282047a7c6
+s = 0x8ca63759c1157ebeaec0d03cecca119fc9a75bf8e6d0fa65c841c8e2738cdaec
+point = S256Point(0x04519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574, 0x82b51eab8c27c66e26c858a079bcdf4f1ada34cec420cafc7eac1a42216fb6c4)
+u = z * pow(s, -1, N) % N
+v = r * pow(s, -1, N) % N
+print((u*G + v*point).x.num == r)  # True</code></pre>
   </section>
   <section>
     <h2>Exercise 1, 2 and 3</h2>
     <ol start="1">
       <li> Are these signatures valid?</li>
-        <pre><code class="hex">
+        <div class="medhex"><code>
 point = (0x887387e452b8eacc4acfde10d9aaf7f6d9a0f975aabb10d006e4da568744d06c,
-0x61de6d95231cd89026e286df3b6ae4a894a3378e393e93a0f45b666329a0ae34)
+0x61de6d95231cd89026e286df3b6ae4a894a3378e393e93a0f45b666329a0ae34)<br/>
 z, r, s = 0xec208baa0fc1c19f708a9ca96fdeff3ac3f230bb4a7ba4aede4942ad003c0f60,
 0xac8d1c87e51d0d441be8b3dd5b05c8795b48875dffe00b7ffcfac23010d3a395,
-68342ceff8935ededd102dd876ffd6ba72d6a427a3edb13d26eb0781cb423c4
+68342ceff8935ededd102dd876ffd6ba72d6a427a3edb13d26eb0781cb423c4<br/>
 z, r, s = 0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d,
 0xeff69ef2b1bd93a66ed5219add4fb51e11a840f404876325a1e8ffe0529a2c,
-0xc7207fee197d27c618aea621406f6bf5ef6fca38681d82b2f06fddbdce6feab6
-        </code></pre>
+0xc7207fee197d27c618aea621406f6bf5ef6fca38681d82b2f06fddbdce6feab6<br/>
+        </code></div>
       <li> Write the <code>sign</code> method in class <code>PrivateKey</code></li>
       <li> Write the <code>verify</code> method in class <code>S256Point</code></li>
     </ol>
@@ -175,12 +170,11 @@ z, r, s = 0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d,
     <h2>Exercise 4</h2>
     <ol start="4">
       <li> Verify the DER signature for the hash of "ECDSA is awesome!" for the given SEC pubkey</li>
-      <pre><code class="hex">
-sec = bytes.fromhex("0204519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574")
-der = bytes.fromhex("304402201f62993ee03fca342fcb45929993fa6ee885e00ddad8de154f268d98f0"
-    "83991402201e1ca12ad140c04e0e022c38f7ce31da426b8009d02832f0b44f39a6b178b7a1")
-z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
-</code></pre>
+      <div class="medhex"><code>
+sec = bytes.fromhex("0204519fac3d910ca7e7138f7013706f619fa8f033e6ec6e09370ea38cee6a7574")<br/>
+der = bytes.fromhex("304402201f62993ee03fca342fcb45929993fa6ee885e00ddad8de154f268d98f083991402201e1ca12ad140c04e0e022c38f7ce31da426b8009d02832f0b44f39a6b178b7a1")<br/>
+z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')<br/>
+</code></div>
     </ol>
   </section>
 </section>
@@ -203,15 +197,18 @@ z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
   </section>
   <section>
     <h3 class="fragment">Output</h3>
+    <div>
     <ul>
       <li class="fragment">Amount, in Satoshis</li>
       <li class="fragment">ScriptPubKey (locking)</li>
     </ul>
     <p class="fragment">Addresses are compressed ScriptPubKeys</p>
     <p class="fragment">Amounts can be 0 (for OP_RETURN), but not negative</p>
+    </div>
   </section>
   <section>
     <h3 class="fragment">Input</h3>
+    <div>
     <ul>
       <li class="fragment">Previous Tx Hash</li>
       <li class="fragment">Previous Tx Index</li>
@@ -220,9 +217,11 @@ z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
     </ul>
     <p class="fragment">Previous Tx Hash and Index points to an output of a previous transaction</p>
     <p class="fragment">Amounts have to be looked up and validated.</p>
+    </div>
   </section>
   <section>
     <h3 >Transaction Structure</h3>
+    <div>
     <ul>
       <li >Version</li>
       <li >Inputs</li>
@@ -232,6 +231,7 @@ z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
     <p class="fragment">Transaction Fee is not specified, but calculated</p>
     <p class="fragment">Transaction Outputs have only two states, spent and unspent</p>
     <p class="fragment">Change has to be specified or it ends up as the Transaction Fee</p>
+    </div>
   </section>
   <section>
     <h2>Transaction </h2>
@@ -262,19 +262,11 @@ z = int.from_bytes(hash256('ECDSA is awesome!'), 'big')
   </section>
   <section>
     <h2>Version</h2>
-    <div class="medhex"><code class="brown">01000000</code><code>01813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
+    <div class="largehex"><code class="brown">01000000</code><code>01813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000006b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278afeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac19430600</code>
       <p/>
-    <div class="container">
-      <div class="col">
       <ul>
         <li><code class="brown">01000000</code> - Version, 4 bytes, Little Endian
       </ul>
-      </div>
-      <div class="col">
-      <ul>
-      </ul>
-      </div>
-    </div>
     </div>
   </section>
   <section>

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="dist/theme/solarized.css">
 
     <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   </head>
   <body>
 <div class="reveal">
@@ -164,8 +164,7 @@
   </section>
   <section>
     <h2>Operations Under the Hood</h2>
-<pre><code data-line-numbers="2-6|8-13">
-def op_dup(stack):
+<pre class="python"><code data-line-numbers="1-5|7-12">def op_dup(stack):
     if len(stack) < 1:
         return False
     stack.append(stack[-1])
@@ -204,7 +203,8 @@ def op_hash256(stack):
     </div>
   </section>
   <section>
-<pre><code data-line-numbers="3-6|7|8-9|10-13|14-17|18-21|22-24|27">
+    <h2>Code to parse Script</h2>
+<pre class="python"><code data-line-numbers="3-6|7|8-9|10-13|14-17|18-21|22-24|27">
 @classmethod
 def parse(cls, s):
     length = read_varint(s)
@@ -245,7 +245,7 @@ def parse(cls, s):
   </section>
   <section>
     <h2>Adding a method for combining</h2>
-    <pre><code>
+    <pre class="python"><code>
 class Script:
 ...
     def __add__(self, other):
@@ -327,7 +327,7 @@ class Script:
   </section>
   <section>
     <h2>Python VM for Script</h2>
-    <pre><code data-line-numbers="1-6|7-8|17-20|25-26|27-31">def evaluate(self, z):
+    <pre class="python"><code data-line-numbers="1-6|7-8|17-20|25-26|27-31">def evaluate(self, z):
     commands = self.commands[:]
     stack = []
     altstack = []
@@ -362,9 +362,7 @@ class Script:
   </section>
   <section>
     <h2>Example of Script evaluation</h2>
-    <pre><code>
-from script import Script
-
+    <pre class="python"><code>from script import Script
 z = 0x7c076ff316692a3d7eb3c3bb0f8b1488cf72e1afcd929e29307032997a838a3d
 sec = bytes.fromhex('048873...34')
 sig = bytes.fromhex('304502...01')
@@ -382,38 +380,62 @@ print(combined_script.evaluate(z))  # True
 </section>
 <section>
   <section>
+    <div>
     <h3>P2PK problems</h3>
     <ul>
       <li class="fragment">Addresses/PubKeys are long (65 bytes)</li>
     </ul>
+    <p/>
     <h3 class="fragment">Solution - Pay-to-PubKey Hash (p2pkh)</h3>
     <ul>
       <li class="fragment">Addresses that start with a 1</li>
       <li class="fragment">Shorter due to use of RIPEMD160</li>
       <li class="fragment">More secure because of hash functions</li>
     </ul>
+    </div>
   </section>
   <section>
     <h3>Pay-to-PubKey Hash</h3>
-    <div class="fragment medhex">ScriptPubKey:
+    <div>
+    <strong class="fragment">ScriptPubKey</strong>
+    <div class="fragment medhex">
       <code class="blue">76</code><code class="purple">a9</code><code class="green">14</code><code class="dark-orange">bc3b654dca7e56b04dca18f2566cdaf02e8d9ada</code><code class="red">88</code><code class="brown">ac</code>
-    <ul class="fragment">
-      <li><code class="blue">76</code> - <code>OP_DUP</code></li>
-      <li><code class="purple">a9</code> - <code>OP_HASH160</code></li>
-      <li><code class="green">14</code> - Length of hash</li>
-      <li><code class="dark-orange">bc3b…da</code> - hash</li>
-      <li><code class="red">88</code> - <code>OP_EQUALVERIFY</code></li>
-      <li><code class="brown">ac</code> - <code>OP_CHECKSIG</code></li>
-    </ul>
+      <div class="container fragment">
+        <div class="col">
+          <ul>
+            <li><code class="blue">76</code> - <code>OP_DUP</code></li>
+            <li><code class="purple">a9</code> - <code>OP_HASH160</code></li>
+            <li><code class="green">14</code> - Length of hash</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul>
+            <li><code class="dark-orange">bc3b…da</code> - hash</li>
+            <li><code class="red">88</code> - <code>OP_EQUALVERIFY</code></li>
+            <li><code class="brown">ac</code> - <code>OP_CHECKSIG</code></li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <div class="fragment medhex">ScriptSig:
+    <br/>
+    <strong class="fragment">ScriptSig</strong>
+    <div class="fragment medhex">
       <code class="green">48</code><code class="cyan">3045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01</code><code class="green">21</code><code class="yellow">0349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><br/>
-      <ul class="fragment">
-        <li><code class="green">48</code> - Length of Signature</li>
-        <li><code class="cyan">3045…01</code> - DER Signature</li>
-        <li><code class="green">21</code> - Length of PubKey</li>
-        <li><code class="cyan">3045…01</code> - Compressed SEC PubKey</li>
-      </ul>
+      <div class="container fragment">
+        <div class="col">
+          <ul>
+            <li><code class="green">48</code> - Length of Signature</li>
+            <li><code class="cyan">3045…01</code> - DER Signature</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul>
+            <li><code class="green">21</code> - Length of PubKey</li>
+            <li><code class="yellow">3045…01</code> - Compressed SEC PubKey</li>
+          </ul>
+        </div>
+      </div>
+    </div>
     </div>
   </section>
   <section>
@@ -484,20 +506,28 @@ print(combined_script.evaluate(z))  # True
   </section>
   <section>
     <h3>Script Puzzles</h3>
-    <div class="fragment bighex">ScriptPubKey:
-      <code class="blue">55</code><code class="purple">93</code><code class="brown">59</code><code class="red">87</code><br/>
-    <ul class="fragment">
-      <li><code class="blue">55</code> - <code>OP_5</code></li>
-      <li><code class="purple">93</code> - <code>OP_ADD</code></li>
-      <li><code class="orange">59</code> - <code>OP_9</code></li>
-      <li><code class="red">87</code> - <code>OP_EQUAL</code></li>
-    </ul>
-    </div>
-    <div class="fragment bighex">ScriptSig:
-      <code class="green">54</code><br/>
-      <ul class="fragment">
-        <li><code class="green">54</code> - <code>OP_4</code></li>
-      </ul>
+    <div class="container">
+      <div class="col">
+        <strong class="fragment">ScriptPubKey</strong>
+        <div class="fragment bighex">
+          <code class="blue">55</code><code class="purple">93</code><code class="brown">59</code><code class="red">87</code><br/>
+          <ul class="fragment">
+            <li><code class="blue">55</code> - <code>OP_5</code></li>
+            <li><code class="purple">93</code> - <code>OP_ADD</code></li>
+            <li><code class="orange">59</code> - <code>OP_9</code></li>
+            <li><code class="red">87</code> - <code>OP_EQUAL</code></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <strong class="fragment">ScriptSig</strong>
+        <div class="fragment bighex">
+          <code class="green">54</code><br/>
+          <ul class="fragment">
+            <li><code class="green">54</code> - <code>OP_4</code></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </section>
   <section>
@@ -556,13 +586,11 @@ print(combined_script.evaluate(z))  # True
   </section>
   <section>
     <h2>Script Puzzle Solution</h2>
-    <pre><code>
-from script import Script
+    <pre class="python"><code>from script import Script
 script_pubkey = Script([0x55, 0x93, 0x59, 0x87])
 script_sig = Script([0x54])
 combined_script = script_sig + script_pubkey
-print(combined_script.evaluate(0))  # True
-    </code></pre>
+print(combined_script.evaluate(0))  # True</code></pre>
   </section>
   <section>
     <h2>Exercise 3</h2>
@@ -764,11 +792,13 @@ print(combined_script.evaluate(0))  # True
   <section>
     <h2>Validating Transactions</h2>
     <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccfcf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278a</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code></div>
+    <div>
     <ul>
       <li class="fragment">Check Inputs Unspent</li>
       <li class="fragment">Check Inputs &gt; Unspent</li>
       <li class="fragment">Check ScriptSig is Valid</li>
     </ul>
+    </div>
   </section>
   <section>
     <h2>Checking Inputs Unspent</h2>
@@ -776,20 +806,18 @@ print(combined_script.evaluate(0))  # True
       <li class="fragment">Requires Blockchain to look up</li>
       <li class="fragment"><code>TxIn.fetch_tx()</code> will query blockstream.info</li>
     </ul>
+    <p/>
     <h3 class="fragment">Example</h3>
-<pre><code class="fragment">
-from tx import TxIn
-
+<pre class="python"><code class="fragment">from tx import TxIn
 prev_tx = bytes.fromhex('d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81')
 tx_in = TxIn(prev_tx, 0)
-prev_tx_obj = tx_in.fetch_tx()
-</code></pre>
+prev_tx_obj = tx_in.fetch_tx()</code></pre>
   </section>
   <section>
     <h2>Exercise 6, 7 and 8</h2>
     <ol start="6">
       <li>What is amount and ScriptPubKey of the first output of this transaction?</li>
-      <code class="hex">d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81</code>
+      <div class="medhex"><code>d1c789a9c60383bf715f3f6ad9d14b91fe55f3deb369fe5d9280cb1a01793f81</code></div>
       <li>Write the <code>value</code> method for the <code>TxIn</code> class.</li>
       <li>Write the <code>script_pubkey</code> method for the <code>TxIn</code> class.</li>
     </ol>
@@ -798,13 +826,11 @@ prev_tx_obj = tx_in.fetch_tx()
 <section>
   <section>
     <h2>Checking Inputs &gt; Outputs</h2>
-<pre><code class="fragment">
-# Check that input amounts >= output amounts
+<pre class="python"><code class="fragment"># Check that input amounts >= output amounts
 input_sum = 42505594
 output_sum = 32454049 + 10011545  # 42465594
 input_sum >= output_sum  # True
-fee = input_sum - output_sum  # 40000
-</code></pre>
+fee = input_sum - output_sum  # 40000</code></pre>
   </section>
   <section>
     <h2>Exercise 9 and 10</h2>
@@ -849,14 +875,11 @@ fee = input_sum - output_sum  # 40000
     <h2>Getting $z$ - Step 4</h2>
     Perform a hash256 and interpret in Big-Endian to get $z$
     <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1</code><code class="magenta">00000000</code><code class="yellow">1976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88ac</code><code class="purple">feffffff</code><code class="red">02</code><code class="green">a135ef0100000000</code><code class="dark-orange">1976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac</code><code class="green">99c3980000000000</code><code class="dark-orange">1976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac</code><code class="dark-red">19430600</code><code class="light-blue">01000000</code></div>
-    <pre><code>
-from helper import hash256
-
+    <pre class="python"><code class="fragment">from helper import hash256
 modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
 h = hash256(modified_tx)
 z = int.from_bytes(h, 'big')
-print(hex(z))  # 0x27e0c5994dec7824e56dec6b2fcb342eb7cdb0d0957c2fce9882f715e85d81a6
-    </code></pre>
+print(hex(z))  # 0x27e0c5994dec7824e56dec6b2fcb342eb7cdb0d0957c2fce9882f715e85d81a6</code></pre>
   </section>
   <section>
     <h2>Exercise 11</h2>
@@ -869,8 +892,7 @@ print(hex(z))  # 0x27e0c5994dec7824e56dec6b2fcb342eb7cdb0d0957c2fce9882f715e85d8
   <section>
     <h2>Using $z$</h2>
     Check the signature using the PubKey and $z$
-    <pre><code>
-from io import BytesIO
+    <pre class="python"><code>from io import BytesIO
 from helper import hash256
 from tx import Tx
 modified_tx = bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1d96a3f5f71bf8303c6a989c7d1000000001976a914a802fc56c704ce87c42d7c92eb75e7896bdc41ae88acfeffffff02a135ef01000000001976a914bc3b654dca7e56b04dca18f2566cdaf02e8d9ada88ac99c39800000000001976a9141c4bc762dd5423e332166702cb75f40df79fea1288ac1943060001000000')
@@ -880,14 +902,13 @@ stream = BytesIO(bytes.fromhex('0100000001813f79011acb80925dfe69b3def355fe914bd1
 transaction = Tx.parse(stream)
 tx_in = transaction.tx_ins[0]
 combined_script = tx_in.script_sig + tx_in.script_pubkey()
-print(combined_script.evaluate(z))  # True
-    </code></pre>
+print(combined_script.evaluate(z))  # True</code></pre>
   </section>
   <section>
     <h2>Exercise 12</h2>
     <ol start="12">
       <li>Validate the signature for the first input of this transaction</li>
-      <code class="hex">01000000012f5ab4d2666744a44864a63162060c2ae36ab0a2375b1c2b6b43077ed5dcbed6000000006a473044022034177d53fcb8e8cba62432c5f6cc3d11c16df1db0bce20b874cfc61128b529e1022040c2681a2845f5eb0c46adb89585604f7bf8397b82db3517afb63f8e3d609c990121035e8b10b675477614809f3dde7fd0e33fb898af6d86f51a65a54c838fddd417a5feffffff02c5872e00000000001976a91441b835c78fb1406305727d8925ff315d90f9bbc588acae2e1700000000001976a914c300e84d277c6c7bcf17190ebc4e7744609f8b0c88ac31470600</code>
+      <div class="medhex"><code>01000000012f5ab4d2666744a44864a63162060c2ae36ab0a2375b1c2b6b43077ed5dcbed6000000006a473044022034177d53fcb8e8cba62432c5f6cc3d11c16df1db0bce20b874cfc61128b529e1022040c2681a2845f5eb0c46adb89585604f7bf8397b82db3517afb63f8e3d609c990121035e8b10b675477614809f3dde7fd0e33fb898af6d86f51a65a54c838fddd417a5feffffff02c5872e00000000001976a91441b835c78fb1406305727d8925ff315d90f9bbc588acae2e1700000000001976a914c300e84d277c6c7bcf17190ebc4e7744609f8b0c88ac31470600</code></div>
     </ol>
   </section>
 </section>

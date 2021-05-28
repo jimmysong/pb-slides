@@ -72,12 +72,6 @@
   color:magenta;
   background-color: rgb(234, 209, 220);
 }
-.hex{
-  font-size: 20px;
-  word-break: break-all;
-  line-height: 0em;
-  text-align: left;
-}
 .tinyhex{
   font-size: 16px;
   word-break: break-all;
@@ -90,6 +84,16 @@
 }
 .medhex{
   font-size: 24px;
+  word-break: break-all;
+  text-align: left;
+}
+.largehex{
+  font-size: 30px;
+  word-break: break-all;
+  text-align: left;
+}
+.largerhex{
+  font-size: 36px;
   word-break: break-all;
   text-align: left;
 }

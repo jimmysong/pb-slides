@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="dist/theme/solarized.css">
 
     <!-- Theme used for syntax highlighted code -->
-    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   </head>
   <body>
 <div class="reveal">
@@ -58,19 +58,19 @@
   </section>
   <section>
     <h2>Exercise 1</h2>
-    <ul start="1">
+    <ol start="1">
       <li>Write the <code>verify_input</code> method in the <code>Tx</code> class.</li>
-    </ul>
+    </ol>
   </section>
 </section>
 <section>
   <section>
     <h2>Construction Plan</h2>
     <ul>
-      <li class="fragment">Spend from a single UTXO:<br/> <code class="hex">8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149:4</code></li>
+      <li class="fragment">Spend from a single UTXO:<br/> <div class="medhex">8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149:4</code></div></li>
       <li class="fragment">Out of the 0.48 TBTC in this UTXO:
-        <ul class="medhex">
-          <li class="fragment">0.1 TBTC to mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf</li>
+        <ul>
+          <li class="fragment">0.1 TBTC to <code class="medhex">mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf</code></li>
           <li class="fragment">0.37 TBTC to go back to the same address</li>
           <li class="fragment">0.01 TBTC for the fee</li>
         </ul>
@@ -78,7 +78,7 @@
   </section>
   <section>
     <h2>Example</h2>
-    <pre><code class="medhex" data-line-numbers="1-4|6|7-8|9|10|11-15|16-20|21|22|23-25|26|27|29">from ecc import PrivateKey
+    <pre class="python"><code class="medhex" data-line-numbers="1-4|6|7-8|9|10|11-15|16-20|21|22|23-25|26|27|29">from ecc import PrivateKey
 from helper import decode_base58, SIGHASH_ALL
 from script import p2pkh_script, Script
 from tx import TxIn, TxOut, Tx
@@ -225,7 +225,7 @@ print(tx_obj.serialize().hex())
   </section>
   <section>
     <code>op_checkmultisig</code>
-    <pre><code data-line-numbers="1-3|4-6|7-9|10-12|13-15|16|17-20">def op_checkmultisig(stack, z):
+    <pre class="python"><code data-line-numbers="1-3|4-6|7-9|10-12|13-15|16|17-20">def op_checkmultisig(stack, z):
     if len(stack) < 1:
         return False
     n = decode_num(stack.pop())
@@ -235,22 +235,21 @@ print(tx_obj.serialize().hex())
     for _ in range(n):
         sec_pubkeys.append(stack.pop())
     m = decode_num(stack.pop())
-                    if len(stack) < m + 1:
-                                    return False
-                                    der_signatures = []
-                                    for _ in range(m):
-                                    der_signatures.append(stack.pop()[:-1])
-                                    stack.pop()
-                                    try:
-                                    raise NotImplementedError
-                                    except (ValueError, SyntaxError):
-                                    return False
-                                    return True
-                                    </code></pre>
+    if len(stack) < m + 1:
+        return False
+    der_signatures = []
+    for _ in range(m):
+        der_signatures.append(stack.pop()[:-1])
+    stack.pop()
+    try:
+        raise NotImplementedError
+    except (ValueError, SyntaxError):
+        return False
+    return True</code></pre>
   </section>
   <section>
     <h2>Exercise 5</h2>
-    <ol start="4">
+    <ol start="5">
       <li>Write the <code>op_checkmultisig</code> function.</li>
   </section>
 </section>
@@ -267,6 +266,8 @@ print(tx_obj.serialize().hex())
   <section>
     <a href="https://bitcoin.stackexchange.com/questions/35959/how-is-the-whitepaper-decoded-from-the-blockchain-tx-with-1000x-m-of-n-multisi/105574"><img src="assets/s5-whitpaper.PNG"></a>
   </section>
+</section>
+<section>
   <section>
     <h2>Pay-to-Script-Hash (p2sh)</h2>
   </section>
@@ -289,24 +290,43 @@ print(tx_obj.serialize().hex())
   </section>
   <section>
     <h3>Pay-to-Script-Hash</h3>
-    <div class="fragment medhex">ScriptPubKey:
-      <code class="purple">a9</code><code class="green">14</code><code class="dark-orange">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><code class="red">87</code>
-      <ul class="fragment">
-        <li><code class="purple">a9</code> - <code>OP_HASH160</code></li>
-        <li><code class="green">14</code> - Length of hash</li>
-        <li><code class="dark-orange">74d6…56</code> - hash</li>
-        <li><code class="red">87</code> - <code>OP_EQUAL</code></li>
-      </ul>
+    <div><strong class="fragment">ScriptPubKey</strong>
+    <div class="fragment medhex">
+      <code class="purple">a9</code><code class="green">14</code><code class="dark-orange">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><code class="red">87</code><br/>
+      <div class="container fragment">
+        <div class="col">
+          <ul>
+            <li><code class="purple">a9</code> - <code>OP_HASH160</code></li>
+            <li><code class="green">14</code> - Length of hash</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul>
+            <li><code class="dark-orange">74d6…56</code> - hash</li>
+            <li><code class="red">87</code> - <code>OP_EQUAL</code></li>
+          </ul>
+        </div>
+      </div>
     </div>
-    <div class="fragment medhex">ScriptSig:
-      <code class="red">00</code><code class="green">48</code><code class="cyan">3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</code><code class="green">48</code><code class="cyan">3045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201</code><code class="brown">47</code><code class="yellow">5221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>
-      <ul class="fragment">
-        <li><code class="red">00</code> - <code>OP_0</code></li>
-        <li><code class="green">48</code> - Length of Signature</li>
-        <li><code class="cyan">3045…01</code> - DER Signature</li>
-        <li><code class="brown">47</code> - Length of RedeemScript</li>
-        <li><code class="yellow">5221…ae</code> - RedeemScript</li>
-      </ul>
+    <strong class="fragment">ScriptSig</strong>
+    <div class="fragment medhex">
+      <code class="red">00</code><code class="green">48</code><code class="cyan">3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</code><code class="green">48</code><code class="cyan">3045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201</code><code class="brown">47</code><code class="yellow">5221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><br/>
+      <div class="container fragment">
+        <div class="col">
+          <ul>
+            <li><code class="red">00</code> - <code>OP_0</code></li>
+            <li><code class="green">48</code> - Length of Signature</li>
+            <li><code class="cyan">3045…01</code> - DER Signature</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul>
+            <li><code class="brown">47</code> - Length of RedeemScript</li>
+            <li><code class="yellow">5221…ae</code> - RedeemScript</li>
+          </ul>
+        </div>
+      </div>
+    </div>
     </div>
   </section>
   <section>
@@ -400,7 +420,7 @@ print(tx_obj.serialize().hex())
   </section>
   <section>
     <h2>Modifying Script VM</h3>
-<pre><code data-line-numbers="5-7|9|11-12|13|14-15|16-18|19|20|21">def evaluate(z):
+<pre class="python"><code data-line-numbers="5-7|9|11-12|13|14-15|16-18|19|20|21">def evaluate(z):
     ...
     else:
     stack.append(command)
@@ -434,7 +454,7 @@ print(tx_obj.serialize().hex())
 </section>
 <section>
   <h3>P2SH Transaction</h3>
-  <div class="medhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">db00483045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
+  <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">db00483045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><br/>
     <div class="container">
       <div class="col">
         <ul>
@@ -466,10 +486,8 @@ print(tx_obj.serialize().hex())
     <li class="fragment">This results in addresses that start with 3 on mainnet and 2 on testnet</li>
   </ul>
   <h3 class="fragment">Example</h3>
-  <pre><code class="fragment">
-      from helper import encode_base58_checksum
-      print(encode_base58_checksum(b'\x05'+bytes.fromhex('74d691da1574e6b3c192ecfb52cc8984ee7b6c56')))  # 3CLoMMyuoDQTPRD3XYZtCvgvkadrAdvdXh
-  </code></pre>
+  <pre class="python"><code class="fragment">from helper import encode_base58_checksum
+print(encode_base58_checksum(b'\x05'+bytes.fromhex('74d691da1574e6b3c192ecfb52cc8984ee7b6c56')))  # 3CLoMMyuoDQTPRD3XYZtCvgvkadrAdvdXh</code></pre>
   </section>
   <section>
     <h2>Exercise 7, 8 and 9</h2>
@@ -514,7 +532,7 @@ print(tx_obj.serialize().hex())
     <h3>Getting $z$ - Step 4</h3>
     Perform a hash256 and interpret in Big-Endian to get $z$
     <div class="smallhex"><code class="brown">01000000</code><code class="red">01</code><code class="blue">868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d8722</code><code class="magenta">1a000000</code><code class="yellow">475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code><code class="purple">ffffffff</code><code class="red">04</code><code class="green">d3b1140000000000</code><code class="dark-orange">1976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac</code><code class="green">7f40090000000000</code><code class="dark-orange">1976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac</code><code class="green">722c0c0000000000</code><code class="dark-orange">1976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788ac</code><code class="green">dc4ace0200000000</code><code class="light-blue">17a91474d691da1574e6b3c192ecfb52cc8984ee7b6c5687</code><code class="dark-red">00000000</code><code class="light-blue">01000000</code></div>
-    <pre><code>from helper import hash256
+    <pre class="python"><code>from helper import hash256
 
 modified_tx = bytes.fromhex('0100000001868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d87221a000000475221022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb702103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152aeffffffff04d3b11400000000001976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac7f400900000000001976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac722c0c00000000001976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788acdc4ace020000000017a91474d691da1574e6b3c192ecfb52cc8984ee7b6c56870000000001000000')
 h = hash256(modified_tx)
@@ -523,8 +541,8 @@ print(hex(z))  # 0xe71bfa115715d6fd33796948126f40a8cdd39f187e4afb03896795189fe14
   </section>
   <section>
     <h3>Get the SEC PubKey and DER Signature from the ScriptSig</h3>
-    <div class="smallhex"><code>0100000001868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d87221a000000<code class="yellow">db0048<em>3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</em>483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221<em>022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70</em>2103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>ffffffff04d3b11400000000001976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac7f400900000000001976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac722c0c00000000001976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788acdc4ace020000000017a91474d691da1574e6b3c192ecfb52cc8984ee7b6c568700000000</code></div>
-    <pre><code>from ecc import S256, Signature
+    <div class="smallhex"><code>0100000001868278ed6ddfb6c1ed3ad5f8181eb0c7a385aa0836f01d5e4789e6bd304d87221a000000<code class="yellow">db0048<strong>3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a8993701</strong>483045022100da6bee3c93766232079a01639d07fa869598749729ae323eab8eef53577d611b02207bef15429dcadce2121ea07f233115c6f09034c0be68db99980b9a6c5e75402201475221<strong>022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70</strong>2103b287eaf122eea69030a0e9feed096bed8045c8b98bec453e1ffac7fbdbd4bb7152ae</code>ffffffff04d3b11400000000001976a914904a49878c0adfc3aa05de7afad2cc15f483a56a88ac7f400900000000001976a914418327e3f3dda4cf5b9089325a4b95abdfa0334088ac722c0c00000000001976a914ba35042cfe9fc66fd35ac2224eebdafd1028ad2788acdc4ace020000000017a91474d691da1574e6b3c192ecfb52cc8984ee7b6c568700000000</code></div>
+    <pre class="python"><code>from ecc import S256, Signature
 point = S256Point.parse(bytes.fromhex('022626e955ea6ea6d98850c994f9107b036b1334f18ca8830bfff1295d21cfdb70'))
 sig = Signature.parse(bytes.fromhex('3045022100dc92655fe37036f47756db8102e0d7d5e28b3beb83a8fef4f5dc0559bddfb94e02205a36d4e4e6c7fcd16658c50783e00c341609977aed3ad00937bf4ee942a89937'))
 print(point.verify(z, sig))  # True</code></pre>
