@@ -103,7 +103,7 @@
     </div>
   </section>
   <section>
-    <h2>Parsing Network Messages</h2>
+    <h3>Network Envelope</h3>
     <div class="medhex"><code class="purple">f9beb4d9</code><code class="blue">76657273696f6e0000000000</code><code class="green">65000000</code><code class="red">5f1a69d2</code><code class="yellow">721101000100000000000000bc8f5e5400000000010000000000000000000000000000000000ffffc61b6409208d010000000000000000000000000000000000ffffcb0071c0208d128035cbc97953f80f2f5361746f7368693a302e392e332fcf05050001</code>
       <ul>
         <li class="fragment"><code class="purple">f9beb4d9</code> - Network Magic</li>
@@ -115,7 +115,7 @@
     </div>
   </section>
   <section>
-    <h2>Parsing <code>version</code></h2>
+    <code><strong>version</strong></code>
     <div class="medhex"><code class="brown">7f110100</code><code class="green">0000000000000000</code><code class="purple">ad17835b00000000</code><code class="green">0000000000000000</code><code class="red">00000000000000000000ffff00000000</code><code class="blue">8d20</code><code class="green">0000000000000000</code><code class="red">00000000000000000000ffff00000000</code><code class="blue">8d20</code><code class="magenta">f6a8d7a440ec27a1</code><code class="yellow">1b2f70726f6772616d6d696e67626c6f636b636861696e3a302e312f</code><code class="cyan">00000000</code><code class="dark-red">01</code><br/>
       <ul>
         <li class="fragment"><code class="brown">7f110100</code> - Protocol Version</li>
@@ -141,7 +141,7 @@
 </section>
 <section>
   <section>
-    <h2>Parsing <code>getheaders</code></h2>
+    <code><strong>getheaders</strong></code>
     <div class="medhex"><code class="brown">7f110100</code><code class="red">01</code><code class="yellow">a35bd0ca2f4a88c4eda6d213e2378a5758dfcd6af43712000000000000000000</code><code class="cyan">0000000000000000000000000000000000000000000000000000000000000000</code><br/>
       <ul>
         <li class="fragment"><code class="brown">7f110100</code> - Protocol Version, 4-bytes, little endian</li>
@@ -152,7 +152,7 @@
     </div>
   </section>
   <section>
-    <h2>Parsing <code>headers</code></h2>
+    <code><strong>headers</strong></code>
     <div class="medhex"><code class="red">02</code><code class="yellow">00000020df3b053dc46f162a9b00c7f0d5124e2676d47bbe7c5d0793a500000000000000ef445fef2ed495c275892206ca533e7411907971013ab83e3b47bd0d692d14d4dc7c835b67d8001ac157e67</code><code class="green">00</code><code class="yellow">00000002030eb2540c41025690160a1014c577061596e32e426b712c7ca00000000000000768b89f07044e6130ead292a3f51951adbd2202df447d98789339937fd006bd44880835b67d8001ade092046</code><code class="green">00</code><br/>
       <ul>
         <li class="fragment"><code class="red">02</code> - Number of block headers</li>
