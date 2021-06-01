@@ -425,19 +425,19 @@ print(tx_obj.serialize().hex())
     else:
     stack.append(command)
     if len(commands) == 3 and commands[0] == 0xa9 \
-    and type(commands[1]) == bytes and len(commands[1]) == 20 \
-    and commands[2] == 0x87:
-    commands.pop()
+          and type(commands[1]) == bytes and len(commands[1]) == 20 \
+          and commands[2] == 0x87:
+        commands.pop()
     h160 = commands.pop()
     commands.pop()
     if not op_hash160(stack):
-    return False
+        return False
     stack.append(h160)
     if not op_equal(stack):
-    return False
+        return False
     if not op_verify(stack):
-    print('bad p2sh h160')
-    return False
+        print('bad p2sh h160')
+        return False
     redeem_script = encode_varint(len(command)) + command
     stream = BytesIO(redeem_script)
     commands.extend(Script.parse(stream).commands)
