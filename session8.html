@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Session 8 - Networking and Segwit</title>
+    <title>Session 8 - Bloom Filters and Segwit</title>
 
     <link rel="stylesheet" href="dist/custom.css">
     <link rel="stylesheet" href="dist/reset.css">
@@ -34,15 +34,15 @@
       <ul>
         <li>Transaction Construction</li>
         <li>Blocks</li>
-        <li>Simplified Payment Verification</li>
-        <li class="current">Networking and Segwit</li>
+        <li>Networking and SPV</li>
+        <li class="current">Bloom Filters and Segwit</li>
       </ul>
     </div>
   </div>
 </section>
 <section>
   <section>
-    <h1>Networking and Segwit</h1>
+    <h1>Bloom Filters and Segwit</h1>
   </section>
   <section>
     <h2>Session 8 Objectives</h2>
@@ -200,7 +200,8 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
     <h2>Exercise 3 and 4</h2>
     <ol start="3">
       <li>Write the <code>filterload</code> method for the <code>BloomFilter</code> class.</li>
-      <li>Connect to a testnet node, send a <code>filterload</code> message to the node for your testnet address, send a request for transactions from the block with your previous testnet transaction (<code>000000000000001df72d82d03e930ae61dac91da4d345303b5a5c84f9113165a</code>)and receive the <code>merkleblock</code> and <code>tx</code> messages.</li>
+      <li>Connect to a testnet node, send a <code>filterload</code> message to the node for your testnet address, send a request for transactions from the block with your previous testnet transaction and receive the <code>merkleblock</code> and <code>tx</code> messages.</li>
+      Here is the block: <code class="smallhex">00000000f96ac4d84c6f224ac2ee296c02dd6102bb43292a3526ed24ff41c179</code>
     </ol>
   </section>
 </section>
@@ -263,7 +264,7 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
   <section>
     <h2>Checkpoint: Exercise 6</h2>
     <ol start="6">
-      <li>You have been sent some more money to your testnet address. Send all of it back to <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>.<p>You will be getting the UTXO using Bloom Filters and network messages and will also send your transaction directly to the network.</p> Here is the block: <code class="smallhex">000000000000002020d1823678eb3094c27506c7061fb590cd83cebe051e1693</code></li>
+      <li>You have been sent some more money to your testnet address. Send all of it back to <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>.<p>You will be getting the UTXO using Bloom Filters and network messages and will also send your transaction directly to the network.</p> Here is the block: <code class="smallhex">0000000000000027bdf67d52751b0fcb263af4ddd8db1cca549ba7b340e5e346</code></li>
     </ol>
   </section>
 <section>
@@ -1076,7 +1077,7 @@ print(bit_field)  # [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]</code></pre
       <li class="fragment">Twitter/Newsletter/Podcast</li>
       <li class="fragment">Connect on <a href="https://www.linkedin.com/in/jimmysong/">LinkedIn</a></li>
       <li class="fragment">Connect you to Open Source Projects</li>
-      <li class="fragment">Connect you to Bitcoin companies</li>
+      <li class="fragment">Join the alumni Telegram group</li>
       <li class="fragment">Send me your goals!</li>
     </ul>
   </section>

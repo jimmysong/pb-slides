@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Session 7 - SPV</title>
+    <title>Session 7 - Networking and SPV</title>
 
     <link rel="stylesheet" href="dist/custom.css">
     <link rel="stylesheet" href="dist/reset.css">
@@ -34,15 +34,15 @@
       <ul>
         <li>Transaction Construction</li>
         <li>Blocks</li>
-        <li class="current">Simplified Payment Verification</li>
-        <li>Networking and Segwit</li>
+        <li class="current">Network and SPV</li>
+        <li>Bloom Filters and Segwit</li>
       </ul>
     </div>
   </div>
 </section>
 <section>
   <section>
-    <h1>Simplified Payment Verification</h1>
+    <h1>Networking and SPV</h1>
   </section>
   <section>
     <h2>Session 7 Objectives</h2>
@@ -326,7 +326,7 @@ hashes = [bytes.fromhex(x) for x in hex_hashes]
 if len(hashes) % 2 == 1:
     hashes.append(hashes[-1])
 parent_level = []
-for i in range(0, len(hex_hashes), 2):
+for i in range(0, len(hashes), 2):
     parent = merkle_parent(hashes[i], hashes[i+1])
     print(parent.hex())
     parent_level.append(parent)</code></pre>
@@ -340,8 +340,7 @@ for i in range(0, len(hex_hashes), 2):
             7f4e6f9e224e20fda0ae4c44114237f97cd35aca38d83081c9bfd41feb907800<br/>
             ade48f2bbb57318cc79f3a8678febaa827599c509dce5940602e54c7733332e7<br/>
             68b3e2ab8182dfd646f13fdf01c335cf32476482d963f5cd94e934e6b3401069<br/>
-            43e7274e77fbe8e5a42a8fb58f7decdb04d521f319f332d88e6b06f8e6c09e27<br/>
-            f391da6ecfeed1814efae39e7fcb3838ae0b02c02ae7d0a5848a66947c0727b0</code></div>
+            43e7274e77fbe8e5a42a8fb58f7decdb04d521f319f332d88e6b06f8e6c09e27</code></div>
       </li>
       <li>Write the <code>merkle_parent_level</code> function.</li>
     </ol>
