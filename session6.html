@@ -307,6 +307,37 @@ print(min_target // target)  # 888171856257</code></pre>
     </ol>
   </section>
 </section>
+<section>
+  <section>
+    <h3>Difficulty Adjustment</h3>
+    <ul>
+      <li class="fragment">Every 2016 blocks the bits field is changed. Each 2016 block group is called an epoch.</li>
+      <li class="fragment">2016 blocks should take 20160 minutes, which is 336 hours, which is 2 weeks.</li>
+      <li class="fragment">If it takes shorter than 2 weeks, target goes down/difficulty goes up.</li>
+      <li class="fragment">If it takes longer than 2 weeks, target goes up/difficulty goes down.</li>
+      <li class="fragment">Max target change is 4x in either direction</li>
+      <li class="fragment">Mainnet has never had a difficulty adjustment that was anywhere near the maximum in either direction</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Formula for Adjusting the Target</h3>
+    <ul>
+      <li class="fragment">Calculate the time difference $t$ between the last block of the epoch and the first block of the epoch.</li>
+      <li class="fragment">Check to see if $t$ is greater than 8 weeks, if so, set $t$ to 8 weeks</li>
+      <li class="fragment">Check to see if $t$ is less than 1/2 week, if so, set $t$ to 1/2 week.</li>
+      <li class="fragment">Finally, $target_{new} = target_{old} \times t / T$ where $T$ is two weeks</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Exercise 18 and 19</h2>
+    <ol start="18">
+      <li>Calculate the new bits given the first and last blocks of this epoch
+      <div class="medhex"><code>000000203471101bbda3fe307664b3283a9ef0e97d9a38a7eacd8800000000000000000010c8aba8479bbaa5e0848152fd3c2289ca50e1c3e58c9a4faaafbdf5803c5448ddb845597e8b0118e43a81d3</code></div>
+      <div class="medhex"><code>02000020f1472d9db4b563c35f97c428ac903f23b7fc055d1cfc26000000000000000000b3f449fcbe1bc4cfbcb8283a0d2c037f961a3fdf2b8bedc144973735eea707e1264258597e8b0118e5f00474</code></div></li>
+      <li>Write the <code>new_bits</code> method for the <code>Block</code> class.</li>
+    </ol>
+  </section>
+</section>
 </div>
 </div>
 <script src="dist/reveal.js"></script>
