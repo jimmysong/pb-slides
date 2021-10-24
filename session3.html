@@ -34,8 +34,8 @@
       <ul>
         <li>Transaction Construction</li>
         <li>Blocks</li>
-        <li>Network and SPV</li>
-        <li>Bloom Filters and Segwit</li>
+        <li>Network and Merkle Trees</li>
+        <li>Compact Filters and Segwit</li>
       </ul>
     </div>
   </div>
@@ -70,10 +70,10 @@
   <section>
     <h2>Choosing $u$ and $v$</h2>
     <ul>
-      <li class="fragment">We have two degrees of freedom, so we use one to prove that we meant to hit that target.</li>
+      <li class="fragment">We have two degrees of freedom, so we use one to <em>commit</em> to a target.</li>
       <li class="fragment">$R=kG=uG+vP$ </li>
-      <li class="fragment">We use part of $R$ for setting $v$</li>
-      <li class="fragment">Then we can set $u$ to be what it needs to be for the equation to go through. $u=k-ve$</li>
+      <li class="fragment">We use part of $R$ for setting $v$ to show commitment</li>
+      <li class="fragment">Then we can set $u$ to be what it needs to hit the committed target. $u=k-ve$</li>
       <li class="fragment">$\scriptsize{u=k-ve \implies uG=kG-veG=kG-vP \implies uG+vP=kG=R}$</li>
     </ul>
   </section>

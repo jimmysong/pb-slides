@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Session 7 - Networking and SPV</title>
+    <title>Session 7 - Networking and Merkle Trees</title>
 
     <link rel="stylesheet" href="dist/custom.css">
     <link rel="stylesheet" href="dist/reset.css">
@@ -34,15 +34,15 @@
       <ul>
         <li>Transaction Construction</li>
         <li>Blocks</li>
-        <li class="current">Network and SPV</li>
-        <li>Bloom Filters and Segwit</li>
+        <li class="current">Network and Merkle Trees</li>
+        <li>Compact Filters and Segwit</li>
       </ul>
     </div>
   </div>
 </section>
 <section>
   <section>
-    <h1>Networking and SPV</h1>
+    <h1>Networking and Merkle Trees</h1>
   </section>
   <section>
     <h2>Session 7 Objectives</h2>
@@ -214,7 +214,7 @@
   <section>
     <h3>Example of Handshake</h3>
     <pre class="python"><code data-line-numbers="1|2|3|4|5">from network import SimpleNode, VersionMessage, VerAckMessage
-node = SimpleNode('testnet.programmingbitcoin.com', testnet=True)
+node = SimpleNode('seed.tbtc.petertodd.org', testnet=True)
 version = VersionMessage()
 node.send(version)
 print(node.wait_for(VerAckMessage).command)</code></pre>
@@ -229,24 +229,30 @@ print(node.wait_for(VerAckMessage).command)</code></pre>
 <section>
   <section>
     <h2>Example of Downloading Block Headers</h2>
-    <pre class="python"><code data-line-numbers="1-3|4-5|6|7-9|10|11-14|15-16|17-18">from network import GetHeadersMessage, HeadersMessage, SimpleNode
-node = SimpleNode('mainnet.programmingbitcoin.com', testnet=False)
+    <pre class="python"><code data-line-numbers="2-3|4-6|7-9|10|11|12-13|14|15-16|17|18-20|21-22|23-24"># import various classes and constants
+node = SimpleNode('seed.btc.petertodd.org', testnet=False)
 node.handshake()
-last_block_hash = GENESIS_BLOCK_HASH
+last_block = GENESIS_BLOCK
+epoch_start_block = GENESIS_BLOCK
 current_height = 1
 for _ in range(20):
-    getheaders = GetHeadersMessage(start_block=last_block_hash)
+    getheaders = GetHeadersMessage(start_block=last_block.hash())
     node.send(getheaders)
     headers = node.wait_for(HeadersMessage)
-    for header in headers.headers:
+    for header in headers:
         if not header.check_pow():
-            raise RuntimeError('bad proof of work at block {}'.format(count))
-        if last_block_hash != GENESIS_BLOCK_HASH and header.prev_block != last_block_hash:
-            raise RuntimeError('discontinuous block at {}'.format(count))
-        if current_height % 2016 == 0:
-            print(header.id())
-        current_height += 1
-        last_block_hash = header.hash()</code></pre>
+            raise RuntimeError(f'bad proof of work at block {count}')
+        if last_block != GENESIS_BLOCK:
+            if header.prev_block != last_block.hash():
+                raise RuntimeError(f'discontinuous block at {count}')
+            if current_height % 2016 == 0:
+                expected_bits = last_block.new_bits(epoch_start_block)
+                if header.bits != expected_bits:
+                    raise RuntimeError(f'bits are off {header.bits.hex()} vs {expected_bits.hex()}')
+                epoch_start_block = header
+                print(header.id())
+        last_block = header
+        current_height += 1</code></pre>
   </section>
   <section>
     <h2>Exercise 7</h2>
