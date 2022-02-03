@@ -214,7 +214,7 @@
   <section>
     <h3>Example of Handshake</h3>
     <pre class="python"><code data-line-numbers="1|2|3|4|5">from network import SimpleNode, VersionMessage, VerAckMessage
-node = SimpleNode('seed.tbtc.petertodd.org', testnet=True)
+node = SimpleNode("signet.programmingbitcoin.com", network="signet")
 version = VersionMessage()
 node.send(version)
 print(node.wait_for(VerAckMessage).command)</code></pre>
@@ -229,11 +229,11 @@ print(node.wait_for(VerAckMessage).command)</code></pre>
 <section>
   <section>
     <h2>Example of Downloading Block Headers</h2>
-    <pre class="python"><code data-line-numbers="2-3|4-6|7-9|10|11|12-13|14|15-16|17|18-20|21-22|23-24"># import various classes and constants
-node = SimpleNode('seed.btc.petertodd.org', testnet=False)
+    <pre class="python"><code data-line-numbers="1-3|4-6|7-9|10|11|12-13|14|15-16|17|18-20|21-22|23-24">network = "mainnet"
+node = SimpleNode("mainnet.programmingbitcoin.com", network=network)
 node.handshake()
-last_block = GENESIS_BLOCK
-epoch_start_block = GENESIS_BLOCK
+last_block = GENESIS_BLOCKS[network]
+epoch_start_block = GENESIS_BLOCKS[network]
 current_height = 1
 for _ in range(20):
     getheaders = GetHeadersMessage(start_block=last_block.hash())
@@ -242,7 +242,7 @@ for _ in range(20):
     for header in headers:
         if not header.check_pow():
             raise RuntimeError(f'bad proof of work at block {count}')
-        if last_block != GENESIS_BLOCK:
+        if last_block != GENESIS_BLOCKS[network]:
             if header.prev_block != last_block.hash():
                 raise RuntimeError(f'discontinuous block at {count}')
             if current_height % 2016 == 0:
@@ -440,33 +440,12 @@ print(merkle_root(current_level)[::-1].hex())</code></pre>
 </section>
 <section>
   <section>
-    <h2>Merkle Blocks</h2>
-  </section>
-  <section>
     <h2>Why is a Merkle Tree useful?</h2>
     <ul>
       <li class="fragment">You can prove a hash is in the tree without knowing the whole tree!</li>
       <li class="fragment">Very useful for thin-clients using something called Simplified Payment Verification (SPV)</li>
       <li class="fragment">SPV is very useful where you don’t have room for the entire blockchain (300+ GB and counting)</li>
-    </ul>
-  </section>
-  <section>
-    <h2>What is a Merkle Block?</h2>
-    <ul>
-      <li class="fragment">Block data that proves certain transactions are in the block (proof of inclusion)</li>
-      <li class="fragment">Depth First Ordering of hashes</li>
-      <li class="fragment">Defined in BIP37</li>
-    </ul>
-  </section>
-  <section>
-    <h3>Merkle Block Processing</h3>
-    <img src="assets/s7-merkle2.PNG">
-  </section>
-  <section>
-    <h2>Future of SPV</h2>
-    <ul>
-      <li class="fragment">BIP37 deprecated on Core nodes.</li>
-      <li class="fragment">BIP158 Compact Block Filters (Neutrino) is the replacement.</li>
+      <li class="fragment">Also useful for TapRoot, where scripts can be proven to be in a root without revealing all the other scripts.</li>
     </ul>
   </section>
 </section>

@@ -67,12 +67,12 @@
   <section>
     <h2>Construction Plan</h2>
     <ul>
-      <li class="fragment">Spend from a single UTXO:<br/> <div class="medhex">8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149:4</code></div></li>
-      <li class="fragment">Out of the 0.48 TBTC in this UTXO:
+      <li class="fragment">Spend from a single UTXO:<br/> <div class="medhex">95ae966a54493321316799d5c4ba7f48faadd653b7eb725ea2c5ea7d38f65cff:0</code></div></li>
+      <li class="fragment">Out of the 0.48 BTC in this UTXO:
         <ul>
-          <li class="fragment">0.1 TBTC to <code class="medhex">mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf</code></li>
-          <li class="fragment">0.37 TBTC to go back to the same address</li>
-          <li class="fragment">0.01 TBTC for the fee</li>
+          <li class="fragment">0.1 BTC to <code class="medhex">mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf</code></li>
+          <li class="fragment">0.37 BTC to go back to the same address</li>
+          <li class="fragment">0.01 BTC for the fee</li>
         </ul>
     </ul>
   </section>
@@ -84,13 +84,13 @@ from script import p2pkh_script, Script
 from tx import TxIn, TxOut, Tx
 
 tx_ins = []
-prev_tx = bytes.fromhex('8be2f69037de71e3bc856a6627ed3e222a7a2d0ce81daeeb54a3aea8db274149')
-prev_index = 4
+prev_tx = bytes.fromhex('95ae966a54493321316799d5c4ba7f48faadd653b7eb725ea2c5ea7d38f65cff')
+prev_index = 0
 tx_ins.append(TxIn(prev_tx, prev_index))
 tx_outs = []
 h160 = decode_base58('mzx5YhAH9kNHtcN481u6WkjeHjYtVeKVh2')
 tx_outs.append(TxOut(
-    amount=int(0.38*100000000),
+    amount=int(0.37*100000000),
     script_pubkey=p2pkh_script(h160),
 ))
 h160 = decode_base58('mnrVtF8DWjMu839VW3rBfgYaAfKk8983Xf')
@@ -98,7 +98,7 @@ tx_outs.append(TxOut(
     amount=int(0.1*100000000),
     script_pubkey=p2pkh_script(h160),
 ))
-tx_obj = Tx(1, tx_ins, tx_outs, 0, testnet=True)
+tx_obj = Tx(1, tx_ins, tx_outs, 0, network="signet")
 z = tx_obj.sig_hash(0)
 pk = PrivateKey(secret=8675309)
 der = pk.sign(z).der()
@@ -120,9 +120,9 @@ print(tx_obj.serialize().hex())
   <section>
     <h2>Checkpoint: Exercise 3 and 4</h2>
     <ol start="3">
-      <li> You have been sent 0.1 TBTC. Send 0.04 TBTC to this address: <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>. <br/>
-      Send your transaction <a href="https://blockstream.info/testnet/tx/push">here</a></li>
-      <li> Bonus: Go to a testnet faucet and get some more coins. Use *both* inputs and send to the same address.</li>
+      <li> You have been sent 100,000 Sats on the Signet network. Send 40,000 Sats to this address: <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code> and send the rest back to yourself. <br/>
+      Send your transaction <a href="https://mempool.space/signet/tx/push">here</a></li>
+      <li> Bonus: Go to a <a href="https://signet.bc-2.jp/">signet faucet</a> and get some more Sats. Use *both* inputs and send to the same address.</li>
     </ol>
   </section>
 </section>
@@ -479,11 +479,11 @@ print(tx_obj.serialize().hex())
 </section>
 <section>
   <h2>P2SH Addresses</h2>
-  <code class="bighex">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><br/>
+  <code class="hex">74d691da1574e6b3c192ecfb52cc8984ee7b6c56</code><br/>
   <ul>
     <li class="fragment">BIP0013 defines how to turn the Hash160 into an address</li>
-    <li class="fragment">For mainnet prepend the byte <code>05</code> and for testnet, prepend the byte <code>c4</code></li>
-    <li class="fragment">This results in addresses that start with 3 on mainnet and 2 on testnet</li>
+    <li class="fragment">For mainnet prepend the byte <code>05</code> and for testnet/signet, prepend the byte <code>c4</code></li>
+    <li class="fragment">This results in addresses that start with 3 on mainnet and 2 on testnet/signet</li>
   </ul>
   <h3 class="fragment">Example</h3>
   <pre class="python"><code class="fragment">from helper import encode_base58_checksum

@@ -49,7 +49,7 @@
     <ul>
       <li class="fragment"><strong>Learn Public Key Cryptography</strong>
       <li class="fragment"><strong>Learn Mathematical Groups </strong>
-      <li class="fragment"><strong>Create a Testnet Address</strong>
+      <li class="fragment"><strong>Create a Testnet/Signet Address</strong>
     </ul>
   </section>
   <section>
@@ -357,7 +357,7 @@ print(point)  # Point(9680241112d370b56da22eb535745d9e314380e568229e09f724106600
     <ul>
       <li class="fragment">Start with either the compressed or uncompressed SEC format public key.
       <li class="fragment">SHA256 the result and then RIPEMD160 the result. This is known in Bitcoin as <em>HASH160</em>.
-      <li class="fragment">Prepend the network prefix (<code>00</code> for mainnet <code>6f</code> for testnet)
+      <li class="fragment">Prepend the network prefix (<code>00</code> for mainnet <code>6f</code> for testnet/signet)
       <li class="fragment">Add a 32-bit/4-byte HASH256 checksum at the end. <em>HASH256</em> in Bitcoin is two rounds of SHA256
       <li class="fragment">Encode the result in Base58
   </section>
@@ -374,7 +374,7 @@ print(addr)  # 19ZewH8Kk1PDbSNdJ97FP4EiCjTRaZMZQA</code></pre>
   <section>
     <h2>Exercise 12, 13 and 14</h2>
     <ol start="12">
-      <li> Find the mainnet and testnet address corresponding to these private keys:
+      <li> Find the mainnet and testnet/signet address corresponding to these private keys:
         <ul>
           <li>$s = 888^3$, sec = Compressed
           <li>$s = 321$, sec = Uncompressed
@@ -388,7 +388,7 @@ print(addr)  # 19ZewH8Kk1PDbSNdJ97FP4EiCjTRaZMZQA</code></pre>
   <section>
     <h2>Checkpoint: Exercise 15</h2>
     <ol start="15">
-      <li> Create a testnet address using your own private key. Put the address <a href="https://docs.google.com/spreadsheets/d/10UQaCZu28K8n24CU1IyKPJGMp1RbB_McKoia0mlKuSQ/edit?usp=sharing">here</a>.
+      <li> Create a testnet/signet address using your own private key. Put the address <a href="https://docs.google.com/spreadsheets/d/1vOQKkdQ-6JSe9-trljqK9FGpun2P2k8A4amat-gM5kM/edit?usp=sharing">here</a>.
 
         <strong>Record the private key and address somewhere! You will need it tomorrow.</strong>
     </ol>

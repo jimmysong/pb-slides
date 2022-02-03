@@ -111,11 +111,28 @@
     </div>
   </section>
   <section>
-    <h2>Exercise 2, 3 and 4</h2>
+    <h2>Exercise 2 and 3</h2>
     <ol start="2">
       <li>Print the Genesis Block Coinbase Transaction's ScriptSig's third item</li>
-      <li>Write the <code>coinbase_height</code> function</li>
-      <li>Find the address corresponding to the ScriptPubkey: <br/><code class="medhex">1976a914338c84849423992471bffb1a54a8d9b1d69dc28a88ac</code></li>
+      <li>Write the <code>coinbase_height</code> method</li>
+    </ol>
+  </section>
+  <section>
+    <h2>Block Subsidy</h2>
+      <ul>
+        <li class="fragment">The Block Subsidy is 50 BTC (5,000,000,000 Sats) halved every 210,000 blocks.</li>
+        <li class="fragment">So if we know the block number, we can calculate how much the block subsidy is: $\frac{5,000,000,000}{2^n}$</li>
+        <li class="fragment">The total amount formula: $\sum_{n=0}^{35}210000(\frac{5,000,000,000}{2^n})$ <span class="fragment">$< 21,000,000 $ BTC</span></li>
+      </ul>
+      <pre class="python"><code class="fragment">block_height = 465879
+epoch = block_height // 210000
+subsidy = 5000000000 >> epoch
+print(subsidy)  # 1250000000</code></pre>
+  </section>
+  <section>
+    <h2>Exercise 4</h2>
+    <ol start="4">
+      <li>Write the <code>coinbase_block_subsidy</code> method</li>
     </ol>
   </section>
 </section>

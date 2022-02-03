@@ -227,17 +227,17 @@
     <div>
     <p class="fragment"> $n^{p-1} = 1 \pmod{p}$ for all $n$ if $p$ is prime </p>
     <p class="fragment"> This means we can do division: </p>
-    <p class="fragment"> $1/n = n^{-1} = n^{-1} \cdot 1 = n^{-1} \cdot n^{p-1} = n^{p-2} \pmod{p}$</p>
-    <p class="fragment"> or $1/n = n^{p-2} \pmod{p}$ </p>
+    <p class="fragment"> $\frac{1}{n} = n^{-1} = n^{-1} \cdot 1 = n^{-1} \cdot n^{p-1} = n^{p-2} \pmod{p}$</p>
+    <p class="fragment"> or $\frac{1}{n} = n^{p-2} \pmod{p}$ </p>
     </div>
   </section>
   <section>
     <h2>Division</h2>
     <div>
     <p class="fragment"> $F_{19}$ </p>
-    <p class="fragment"> $1/n = n^{p-2} \pmod{p}$ </p>
-    <p class="fragment"> $2/3 = 2 \cdot 1/3 = 2 \cdot 3^{19-2} = 7 \pmod{19}$ </p>
-    <p class="fragment"> $3/15 = 3 \cdot 1/15 = 3 \cdot 15^{19-2} = 4 \pmod{19}$ </p>
+    <p class="fragment"> $\frac{1}{n} = n^{p-2} \pmod{p}$ </p>
+    <p class="fragment"> $\frac{2}{3} = 2 \cdot \frac{1}{3} = 2 \cdot 3^{19-2} = 7 \pmod{19}$ </p>
+    <p class="fragment"> $\frac{3}{15} = 3 \cdot \frac{1}{15} = 3 \cdot 15^{19-2} = 4 \pmod{19}$ </p>
     </div>
   </section>
   <section>
@@ -254,7 +254,7 @@
     <ol start="9">
       <li> Solve these equations in $F_{31}$ </li>
       <ul>
-        <li>$3 / 24 = ?$
+        <li>$\frac{3}{24} = ?$
         <li>$17^{-3} = ?$
         <li>$4^{-4} \cdot 11 = ?$
       </ul>
@@ -360,7 +360,7 @@ print(y**2 == x**3 + 5 * x + 7)  # True</code></pre>
     <div>
     <p class="fragment">$y^2=x^3+5x+7$</p>
     <p class="fragment">What is $(2,5)+(3,7)$?</p>
-    <p class="fragment">$s = \frac{y_2-y_1}{x_2-x_1} = (7-5)/(3-2) = 2$</p>
+    <p class="fragment">$s = \frac{y_2-y_1}{x_2-x_1} = \frac{7-5}{3-2} = 2$</p>
     <p class="fragment">$x_3 = s^2 - x_1 - x_2 = 4 - 2 - 3 = -1$ </p>
     <p class="fragment">$y_3 = s(x_1-x_3) - y_1 = 2(2-(-1)) - 5 = 1$</p>
     <p class="fragment">$(2,5)+(3,7)=(-1,1)$</p>
@@ -394,7 +394,7 @@ print(y**2 == x**3 + 5 * x + 7)  # True</code></pre>
     <div>
     <p class="fragment">$y^2=x^3+5x+7$</p>
     <p class="fragment">What is $(2,5)+(2,5)$?</p>
-    <p class="fragment">$s = \frac{3x_1^2+a}{2y_1} = (3 \cdot 2^2 + 5)/(2 \cdot 5) = 1.7$</p>
+    <p class="fragment">$s = \frac{3x_1^2+a}{2y_1} = \frac{3 \cdot 2^2 + 5}{2 \cdot 5} = 1.7$</p>
     <p class="fragment">$x_3 = s^2 - 2x_1 = 1.72 - 2 \cdot 2 = -1.11$ </p>
     <p class="fragment">$y_3 = s(x_1-x_3) - y_1 = 1.7 \cdot (2+1.11) - 5 = 0.287$</p>
     <p class="fragment">$(2,5)+(2,5)=(-1.11,0.287)$</p>

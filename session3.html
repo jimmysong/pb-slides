@@ -84,7 +84,7 @@
       <li class="fragment">$P=eG$ and the private key is $e$ </li>
       <li class="fragment">Generate a new random number: $k$</li>
       <li class="fragment">Compute $kG=R=(x,y)$, let $r=x$</li>
-      <li class="fragment">Compute $s=(z+re)/k$, which can only be done with the private key, $e$</li>
+      <li class="fragment">Compute $s=\frac{z+re}{k}$, which can only be done with the private key, $e$</li>
       <li class="fragment">Signature is the pair $(r,s)$</li>
     </ul>
   </section>
@@ -105,10 +105,10 @@ print(hex(z), hex(r), hex(s))</code></pre>
     <ul>
       <li class="fragment">Start with the hash of what is being signed: $z$</li>
       <li class="fragment">$P=eG$ and the public key is $P$ </li>
-      <li class="fragment">Signature is $(r,s)$ where $s=(z+re)/k$</li>
-      <li class="fragment">Compute $u=z/s, v=r/s$</li>
+      <li class="fragment">Signature is $(r,s)$ where $s=\frac{z+re}{k}$</li>
+      <li class="fragment">Compute $u=\frac{z}{s}, v=\frac{r}{s}$</li>
       <li class="fragment">Compute $uG+vP$</li>
-      <li class="fragment">$uG+vP=(z/s)G+(r/s)P=(z/s)G+(re/s)G \\ =((z+re)/s)G =((z+re)k/(z+re))G \\ =kG=R=(r,y)$</li>
+      <li class="fragment">$uG+vP=\frac{z}{s}G+\frac{r}{s}P=\frac{z}{s}G+\frac{re}{s}G \\ =\frac{z+re}{s}G =\frac{(z+re)k}{z+re}G \\ =kG=R=(r,y)$</li>
       <li class="fragment">If the x coordinate of $R$ matches, we have a valid signature.</li>
     </ul>
   </section>
