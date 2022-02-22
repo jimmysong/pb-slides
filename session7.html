@@ -35,7 +35,7 @@
         <li>Transaction Construction</li>
         <li>Blocks</li>
         <li class="current">Network and Merkle Trees</li>
-        <li>Compact Filters and Segwit</li>
+        <li>Communication and Segwit</li>
       </ul>
     </div>
   </div>
@@ -431,8 +431,29 @@ print(merkle_root(current_level)[::-1].hex())</code></pre>
   </section>
 </section>
 <section>
-  <h2>Exercise 16</h2>
-  <ol start="16">
+  <section>
+    <code><strong>getdata</strong></code>
+    <div class="largerhex"><code class="red">01</code><code class="brown">02000000</code><code class="yellow">a35bd0ca2f4a88c4eda6d213e2378a5758dfcd6af43712000000000000000000</code><br/>
+      <ul>
+        <li class="fragment"><code class="red">01</code> - Number of items being requested, varint</li>
+        <li class="fragment"><code class="brown">02000000</code> - Data Type, 4 bytes, little endian</li>
+        <li class="fragment"><code class="yellow">a35b…00</code> - Identifier, 32 bytes, little endian</li>
+      </ul>
+    </div>
+    <div class="fragment"> Data Type can be Tx (1), Block (2), Filtered block (3) or Compact block (4)
+    </div>
+  </section>
+  <section>
+    <h2>Exercise 16</h2>
+    <ol start="16">
+      <li>Write the <code>serialize</code> method for the <code>GetDataMessage</code> class.
+      </li>
+    </ol>
+  </section>
+</section>
+<section>
+  <h2>Exercise 17</h2>
+  <ol start="17">
     <li>Validate the merkle root for this block on Testnet via network protocol:
       <div class="smallhex"><code>0000000000044b01a9440b34f582fe171c7b8642fedd0ebfccf8fdf6a1810900</code></div>
     </li>

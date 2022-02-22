@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <title>Session 8 - Compact Filters and Segwit</title>
+    <title>Session 8 - Communication and Segwit</title>
 
     <link rel="stylesheet" href="dist/custom.css">
     <link rel="stylesheet" href="dist/reset.css">
@@ -35,124 +35,54 @@
         <li>Transaction Construction</li>
         <li>Blocks</li>
         <li>Networking and Merkle Trees</li>
-        <li class="current">Compact Filters and Segwit</li>
+        <li class="current">Communication and Segwit</li>
       </ul>
     </div>
   </div>
 </section>
 <section>
   <section>
-    <h1>Compact Filters and Segwit</h1>
+    <h1>Communication and Segwit</h1>
   </section>
   <section>
     <h2>Session 8 Objectives</h2>
     <ul>
-      <li class="fragment"><strong>Learn Compact Filters</strong>
+      <li class="fragment"><strong>More Network Communication</strong>
       <li class="fragment"><strong>Construct Transaction using Network Communications Only </strong>
       <li class="fragment"><strong>Learn Segwit </strong>
       <li class="fragment"><strong>Discuss Next Steps</strong>
     </ul>
   </section>
   <section>
-    <h2>Compact Filters</h2>
-  </section>
-  <section>
-    <h2>How do I get my own transactions while preserving privacy?</h2>
-    <ul>
-      <li class="fragment">Getting all transactions requires too much bandwidth</li>
-      <li class="fragment">Getting only my transactions gives away privacy</li>
-      <li class="fragment">Solution is to use a hash function to determine whether to download a block or not.</li>
-    </ul>
-  </section>
-  <section>
-    <h3 class="fragment">Implementation</h3>
-    <ul>
-      <li class="fragment">Each Block has a <em>Compact Filter</em> which is a list of all hash values of every ScriptPubKey in each transaction of the block. </li>
-      <li class="fragment">The hash function used (siphash_2_4) does not have collision resistance, so you will get some false positives.</li>
-      <li class="fragment">Hash function only has 784,931 possible values.</li>
-      <li class="fragment">To use the filter, get the siphash value of the ScriptPubKey you're interested in and check if the value is in the compact filter.</li>
-      <li class="fragment">If it's in the filter, download the whole block. If not, you can skip downloading the block</li>
-    </ul>
-  </section>
-  <section>
-    <h3 class="fragment">Network Commands</h3>
-    <ul>
-      <li class="fragment"><code>getcfilters</code> - asks another node for compact filters given a range of blocks</li>
-      <li class="fragment"><code>cfilter</code> - response to <code>getcfilters</code> which is the compact filter for a particular block. There are going to be multiple such messages if you request more than 1 block.</li>
-    </ul>
-  </section>
-  <section>
     <h2>Exercise 1 and 2</h2>
     <ol start="1">
-      <li>Download the Compact Filter for the block where you received signet coins earlier and see if the ScriptPubKey from your address matches</li>
+      <li>Write the <code>get_transactions</code> method for the <code>Block</code> class.</li>
+      <li>Check that the block with your previous transaction in fact has it</li>
+    </ol>
+  </section>
+</section>
+<section>
+  <section>
+    <h2>Working with Bitcoin Nodes</h2>
+    <ul>
+      <li class="fragment">You can request any transaction or block from nodes.</li>
+      <li class="fragment">Requesting transactions reduces privacy</li>
+      <li class="fragment">Request blocks and search for your transaction</li>
+      <li class="fragment">This can be done using Compact Filters</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Exercise 3</h2>
+    <ol start="3">
       <li>Write the <code>get_block</code> method for the <code>SimpleNode</code> class.</li>
     </ol>
   </section>
 </section>
 <section>
   <section>
-    <h2>Verifying Compact Filters</h2>
-    <ul>
-      <li class="fragment">How do I know the filters are good?</li>
-      <li class="fragment">Compact Filters have their own hash-chain!</li>
-      <li class="fragment">Every Compact Filter is hashed using hash256 and chained together in the same way that blocks are.</li>
-    </ul>
-  </section>
-  <section>
-    <code><strong>Compact Filter Header</strong></code>
-    <div class="largerhex"><code class="red">a7a1d4de5bb454e9c0febfac2b802374515d5a3667778be6d0e2fe7de7f646a6</code><code class="cyan">50b781aed7b7129012a6d20e2d040027937f3affaee573779908ebb779455821</code><br/>
-      <ul>
-        <li class="fragment"><code class="red">a7a1…a6</code> - hash256 of the Compact Filter for the Current Block</li>
-        <li class="fragment"><code class="cyan">50b7…21</code> - hash256 of the previous block's Compact Filter Header</li>
-      </ul>
-    </div>
-  </section>
-  <section>
-    <h3 class="fragment">Checkpoints</h3>
-    <ul>
-      <li class="fragment">Nodes gives you Compact Filter Headers every 1000 blocks</li>
-      <li class="fragment">Verification is asking other nodes for the same data.</li>
-      <li class="fragment">hash256 is cryptographically secure, making fooling a light node very hard.</li>
-    </ul>
-  </section>
-  <section>
-    <h3 class="fragment">Network Commands</h3>
-    <ul>
-      <li class="fragment"><code>getcfheaders</code> - request for compact filter <em>hashes</em> for a range of blocks. The compact filter <em>headers</em> can be computed from the hashes.</li>
-      <li class="fragment"><code>cfheaders</code> - response to <code>getcfheaders</code> returning compact filter hashes so the headers can be computed.</li>
-      <li class="fragment"><code>getcfcheckpt</code> - request for every 1000th compact filter header up to some particular block.</li>
-      <li class="fragment"><code>cfcheckpt</code> - response to <code>getcfcheckpt</code> returning every 1000th compact filter header.</li>
-    </ul>
-  </section>
-  <section>
-    <h3>Example of Compact Filter Validation</h3>
-    <pre class="python"><code data-line-numbers="1-4|5-6|7-9|10|11|12-14|15-16|17|18|19|20-21|22">num_checkpoints = 20
-with open('block_headers.testnet', 'rb') as f:
-    headers = [Block.parse_header(f) for _ in range(num_checkpoints * 1000)]
-block_hashes = [b.hash() for b in headers]
-node = SimpleNode('testnet.programmingbitcoin.com', testnet=True)
-node.handshake()
-get_cfcheckpoint = GetCFCheckPointMessage(stop_hash=block_hashes[-1])
-node.send(get_cfcheckpoint)
-cfcheckpoint = node.wait_for(CFCheckPointMessage)
-height = 0
-for checkpoint in cfcheckpoint.filter_headers:
-    get_cfheaders = GetCFHeadersMessage(start_height=height, stop_hash=block_hashes[height+1000])
-    node.send(get_cfheaders)
-    cfheaders = node.wait_for(CFHeadersMessage)
-    if cfheaders.last_header != checkpoint:
-        raise RuntimeError(f'checkpoint mismatch {cfheaders.last_header.hex()} vs {checkpoint.hex()}')
-    node.send(GetCFiltersMessage(start_height=height, stop_hash=block_hashes[height+999]))
-    for i in range(1000):
-        fb = node.wait_for(CFilterMessage).filter_bytes
-        if hash256(fb) != cfheaders.filter_hashes[i]:
-            raise RuntimeError(f'{i}: filter does not match hash {hash256(fb).hex()} vs {cfheaders.filter_hashes[i].hex()}')
-    height += 1000</code></pre>
-  </section>
-  <section>
-    <h2>Checkpoint: Exercise 3</h2>
-    <ol start="3">
-      <li>You have been sent some more sats on signet to the address you previously used. Send all of it back to <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>.<p>You will be getting the UTXO using Compact Filters and network messages and will also send your transaction directly to the network.</p> Here is the block: <code class="smallhex"></code></li>
+    <h2>Checkpoint: Exercise 4</h2>
+    <ol start="4">
+      <li>You have been sent some more sats on signet to the address you previously used. Send all of it back to <code>mqYz6JpuKukHzPg94y4XNDdPCEJrNkLQcv</code>.<p>You will be getting the UTXO by downloading the entire block via the network and will also send your transaction directly to the network.</p> Here is the block: <code class="smallhex"></code></li>
     </ol>
   </section>
 </section>
@@ -909,10 +839,11 @@ for checkpoint in cfcheckpoint.filter_headers:
       <li class="fragment">HD Wallets (BIP32, BIP44)</li>
       <li class="fragment">Mnemonic Backups (BIP39)</li>
       <li class="fragment">Segwit Signing and Verification (BIP147)</li>
+      <li class="fragment">Compact Filters (BIP158)</li>
       <li class="fragment">Schnorr Signatures/Taproot (BIP340, BIP341, BIP342)</li>
     </ul>
   </section>
-<!--  <section>
+  <section>
     <h2>How to Bootstrap your Career</h2>
     <ul>
       <li class="fragment">Create your own project</li>
@@ -957,7 +888,7 @@ for checkpoint in cfcheckpoint.filter_headers:
       <li class="fragment">Hackathons</li>
       <li class="fragment">Online Contests</li>
     </ul>
-  </section>-->
+  </section>
   <section>
     <h2>Helping You Succeed</h2>
     <ul>
