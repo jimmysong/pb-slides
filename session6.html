@@ -122,7 +122,7 @@
       <ul>
         <li class="fragment">The Block Subsidy is 50 BTC (5,000,000,000 Sats) halved every 210,000 blocks.</li>
         <li class="fragment">So if we know the block number, we can calculate how much the block subsidy is: $\frac{5,000,000,000}{2^n}$</li>
-        <li class="fragment">The total amount formula: $\sum_{n=0}^{35}210000(\frac{5,000,000,000}{2^n})$ <span class="fragment">$< 21,000,000 $ BTC</span></li>
+        <li class="fragment">The total amount formula: $\sum_{n=0}^{32}210000(\frac{5,000,000,000}{2^n})$ <span class="fragment">$< 21,000,000 $ BTC</span></li>
       </ul>
       <pre class="python"><code class="fragment">block_height = 465879
 epoch = block_height // 210000
